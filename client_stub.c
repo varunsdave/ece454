@@ -15,7 +15,7 @@ return_type make_remote_call(
     const int nparams,
     ...)
 {
-    printf("make call");
+    printf("%s\n", "make call");
 
     return_type r;
     return r;

@@ -9,8 +9,8 @@ int main()
 				       "addtwo", 2,
 	                               sizeof(int), (void *)(&a),
 	                               sizeof(int), (void *)(&b));
-    int i = *(int *)(ans.return_val);
-    printf("client, got result: %d\n", i);
+    //int i = *(int *)(ans.return_val);
+    //printf("client, got result: %d\n", i);
 
     return 0;
 }
