@@ -5,6 +5,9 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <net/if.h>
+#include <sys/ioctl.h>
+
 #include "ece454rpc_types.h"
 
 #define BUFLEN 512
@@ -26,7 +29,17 @@ bool register_procedure(const char *procedure_name,
 
 void launch_server()
 {
-    printf("Launching server...\n");
+    int fd; 
+    struct ifreq ifr;
+    fd = socket(AF_INET, SOCK_DGRAM,0 );
+    ifr.ifr_addr.sa_family = AF_INET;
+
+    strncpy(ifr.ifr_name , "eth0", IFNAMSIZ-1);
+
+    ioctl(fd, SIOCGIFADDR, &ifr);
+    close (fd);
+    
+    printf("Launching server...\n %s\n ", inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
 
     struct sockaddr_in server, client;
     int s, i, slen=sizeof(client);
@@ -44,7 +57,6 @@ void launch_server()
     if (bind(s, (struct sockaddr *) &server, sizeof(server))==-1) {
         perror("bind");
     }
-
     while(1) {
         if (recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *) &client, &slen)==-1) {
             perror("recvfrom()");
