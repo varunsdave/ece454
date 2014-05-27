@@ -10,7 +10,7 @@
 #include "ece454rpc_types.h"
 
 #define BUFLEN 512
-#define SRV_IP "129.97.56.12"
+#define SRV_IP "127.0.0.1"
 #define PORT 9001
 
 return_type make_remote_call(

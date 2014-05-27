@@ -39,8 +39,7 @@ void launch_server()
     ioctl(fd, SIOCGIFADDR, &ifr);
     close (fd);
     
-    printf("Launching server...\n %s\n ", inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr));
-
+    printf("%s %d\n", inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr),PORT);
     struct sockaddr_in server, client;
     int s, i, slen=sizeof(client);
     char buf[BUFLEN];
@@ -53,7 +52,6 @@ void launch_server()
     server.sin_family = AF_INET;
     server.sin_port = htons(PORT);
     server.sin_addr.s_addr = htonl(INADDR_ANY);
-
     if (bind(s, (struct sockaddr *) &server, sizeof(server))==-1) {
         perror("bind");
     }
