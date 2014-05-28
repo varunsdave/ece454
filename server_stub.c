@@ -56,6 +56,32 @@ void launch_server()
 
         printf("Received packet from %s:%d\nData: %s\n\n",
                 inet_ntoa(client.sin_addr), ntohs(client.sin_port), buf);
+        
+       char *  buf_ptr = buf; 
+        char * proc_name;;
+       // printf ("before increment of buf: %i \n", buf_ptr);
+       // buf_ptr += sizeof(procedure_name);
+       // printf ("after increment of buf ptr: %i \n", buf_ptr); 
+       // void *  nparams = &buf[*buf_ptr];
+       // printf ("procedure name is : %s \n", procedure_name);
+       // printf ("naparams is: %i \n", nparams);
+       int nparams;
+       void * param1;
+       void * param2; 
+       memcpy(&proc_name, buf_ptr, 6);
+       memcpy(&nparams, buf+sizeof(proc_name), 4);
+       memcpy(&param1, buf+sizeof(proc_name)+8,4);
+       memcpy(&param2, buf+sizeof(proc_name)+16,4);
+       printf("number of params is: %i  name of procedure is : %s name of param1: %i name of param2: %i \n ",nparams, &proc_name, param1, param2);  
+  
+        int j = 0;
+        for ( j =0; j < BUFLEN; j++){
+             printf ("%i ",buf[j]);
+             if (j%20 == 0 && j >0 ){
+                printf("\n");
+             }
+
+        }
     }
 
     // should never reach here
