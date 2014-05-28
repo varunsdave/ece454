@@ -12,15 +12,9 @@
 
 bool register_procedure(const char *procedure_name,
     const int nparams,
-    fp_type fnpointer);
-
-void launch_server();
-
-
-bool register_procedure(const char *procedure_name,
-    const int nparams,
     fp_type fnpointer)
 {
+    printf("register\n");
     return 0;
 }
 
