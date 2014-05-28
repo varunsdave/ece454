@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -18,21 +19,54 @@ return_type make_remote_call(
     const int serverportnumber,
     const char *procedure_name,
     const int nparams,
-    ...);
-
-return_type make_remote_call(
-    const char *servernameorip,
-    const int serverportnumber,
-    const char *procedure_name,
-    const int nparams,
     ...)
 {
-    printf("%s\n", "make call");
+    printf("%s to %s\n", "make call", procedure_name);
 
     struct sockaddr_in server;
     int s, i, slen=sizeof(server);
-    char buf[BUFLEN] = "test";
+    char buf[BUFLEN] = "";
+    char* buf_position = buf;
 
+    va_list valist;
+    arg_type args;
+
+    // Copy procedure name to buf
+    strcpy(buf_position, procedure_name);
+    buf_position += sizeof(procedure_name);
+
+    // Copy nparams to buf
+    memcpy(buf_position, &nparams, sizeof(nparams));
+    buf_position += sizeof(nparams);
+
+    va_start(valist, nparams);
+
+    /* access all the arguments assigned to valist */
+    for (i = 0; i < nparams; i++)
+    {
+        // copy size of param to buf
+        int size = va_arg(valist, int);
+        memcpy(buf_position, &size, sizeof(int));
+        buf_position += sizeof(int);
+
+        // copy param to buf
+        void* param = va_arg(valist, void*);
+        memcpy(buf_position, param, size);
+        buf_position += size;
+    }
+
+    /* clean memory reserved for valist */
+    va_end(valist);
+
+    // Print buf
+    /*
+    for (i = 0; i < BUFLEN; i++) {
+        printf("%i ", buf[i]);
+        if (i % 20 == 0 && i > 0) {
+            printf("\n");
+        }
+    }*/
+    
     if ((s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP))==-1) {
         perror("socket");
     }
