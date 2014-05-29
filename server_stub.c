@@ -27,13 +27,15 @@ bool register_procedure(const char *procedure_name,
     const int nparams,
     fp_type fnpointer)
 {
+   // printf("trying to add %s\n", procedure_name);
     if (head == NULL){
         cur = (db *) malloc(sizeof(db));
         cur -> proc_name = (char *)  procedure_name;
         cur -> fnpoint = fnpointer;
-        cur -> next = head;
+        cur -> next = NULL;;
         head = cur;
         cur = head;
+     //   printf("%s\n",head->proc_name);
         return true;
     }
     // find if function is already registered
@@ -41,7 +43,9 @@ bool register_procedure(const char *procedure_name,
          db * tmp = head;
         
          while (tmp -> next != NULL){
+            // printf("%s\n", tmp->proc_name);
              if (strcmp(tmp->proc_name, procedure_name) == 0){
+                   fprintf(stderr, "possible duplicate entry\n");
                    return false;
              }
              tmp = tmp -> next;
@@ -55,6 +59,14 @@ bool register_procedure(const char *procedure_name,
          new_entry -> next = NULL;
          cur -> next = new_entry;
          cur = new_entry;
+        
+         /*
+         // print the linked database
+         db *print = head;
+         while (print){
+            printf("%s\n", print -> proc_name);
+            print = print -> next;
+         }*/
          return true;
         
     }
