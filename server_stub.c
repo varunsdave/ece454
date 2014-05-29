@@ -114,12 +114,6 @@ void launch_server()
         
         char* buf_ptr = buf;
         char* proc_name;;
-        // printf ("before increment of buf: %i \n", buf_ptr);
-        // buf_ptr += sizeof(procedure_name);
-        // printf ("after increment of buf ptr: %i \n", buf_ptr);
-        // void *  nparams = &buf[*buf_ptr];
-        // printf ("procedure name is : %s \n", procedure_name);
-        // printf ("naparams is: %i \n", nparams);
         int nparams;
         void* param1;
         void* param2;
@@ -134,12 +128,70 @@ void launch_server()
         // Copy procedure name from buffer
         strcpy(proc_name, buf_ptr);
 
+        buf_ptr += sizeof(proc_name);
+
         // Copy params
+       memcpy(&nparams, buf_ptr, 4);
+       int cnt = 0;
+       // generate a list of arg list
+       arg_type * at;
+       at = (arg_type *) malloc(sizeof(arg_type)); 
+    //   at -> next = NULL;
+       for (cnt = 0; cnt < nparams; cnt ++){
+           arg_type * at_tmp;
+           at_tmp = (arg_type *)malloc(sizeof(arg_type));
+           void* arg_v;
+           int arg_s;
+           buf_ptr += 4;
+           memcpy(&arg_s, buf_ptr,4);
+           buf_ptr += sizeof(arg_s);
+           memcpy (&arg_v, buf_ptr, arg_s);
+           at_tmp -> arg_val = arg_v;
+           at_tmp -> arg_size = arg_s; 
+           if (cnt == 0){
+             at = at_tmp;
+           }
+           else {
+             at -> next = at_tmp;
+           } 
+
+           printf("%i\n", at_tmp->arg_val);    
+           //delete at_tmp; 
+       }
+       
+       // copy first param
+      // buf_ptr += 8;
+      // memcpy(&param1, buf_ptr,4);
+       // copy second param
+    //   buf_ptr += 8;
+     //  memcpy(&param2, buf_ptr,4);
+      // printf("number of params is: %i  name of procedure is : %s name of param1: %i name of param2: %i\n ",nparams, &proc_name, param1, param2);  
+        
+       db * tmp;
+       tmp  = head;
+             
+       int registered_proc = 0; // if entry is not registered break
+       while (tmp->next != NULL){
+           char * str = tmp->proc_name;
+         if (strcmp(str,proc_name)==0){
+       //        return_type rt (*(tmp->fnpoint)) (nparams, arg_type *);     
+              printf("matching string found \n");  
+              registered_proc = 1; 
+              break;   
+          }
+          printf("%s\n",tmp->proc_name);
+          tmp = tmp -> next;
+       }
+
+       if (registered_proc == 0){
+            printf("error\n");
+       }
         memcpy(&nparams, buf+sizeof(proc_name), 4);
         memcpy(&param1, buf+sizeof(proc_name)+8,4);
         memcpy(&param2, buf+sizeof(proc_name)+16,4);
         printf("number of params is: %i  name of procedure is : %s name of param1: %i name of param2: %i \n ",nparams, proc_name, param1, param2);  
   
+       /*
         int j = 0;
         for ( j =0; j < BUFLEN; j++){
              printf ("%i ",buf[j]);
@@ -147,7 +199,7 @@ void launch_server()
                 printf("\n");
              }
 
-        }
+        }*/
     }
 
     // should never reach here
