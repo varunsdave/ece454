@@ -79,12 +79,32 @@ return_type make_remote_call(
         exit(1);
     }
 
+    // Send buf to server
     if (sendto(s, buf, BUFLEN, 0, (struct sockaddr *)&server, slen)==-1) {
         perror("sendto()");
     }
 
+    /* Receive return value from server */
+    memset(buf, 0, BUFLEN);
+    buf_position = buf;
+
+    if (recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *) &server, &slen)==-1) {
+        perror("recvfrom()");
+    }
+
+    int return_size;
+    memcpy(&return_size, buf_position, sizeof(int));
+    buf_position += sizeof(int);
+
+    void* return_value = malloc(return_size);
+    memcpy(return_value, buf_position, return_size);
+
     close(s);
 
     return_type r;
+
+    r.return_size = return_size;
+    r.return_val = return_value;
+
     return r;
 }
