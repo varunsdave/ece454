@@ -36,7 +36,6 @@ int main() {
     register_procedure("add2",2,add);
     register_procedure("testAdd2",2,add);
     register_procedure("23s",2,add);
-    register_procedure("add2",2,add);
     launch_server();
 
     /* should never get here, because
