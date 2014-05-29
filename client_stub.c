@@ -53,24 +53,25 @@ return_type make_remote_call(
     // Clean memory reserved for valist
     va_end(valist);
 
+    // Create socket
     int s;
-    if ((s=socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP))==-1) {
+    if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1) {
         perror("socket()");
     }
 
     // Build sockaddr_in
     struct sockaddr_in server;
-    int slen=sizeof(server);
+    int slen = sizeof(server);
     memset((char *) &server, 0, sizeof(server));
     server.sin_family = AF_INET;
     server.sin_port = htons(PORT);
-    if (inet_aton(SRV_IP, &server.sin_addr)==0) {
+    if (inet_aton(SRV_IP, &server.sin_addr) == 0) {
         fprintf(stderr, "inet_aton() failed\n");
         exit(1);
     }
 
     // Send buf to server
-    if (sendto(s, buf, BUFLEN, 0, (struct sockaddr *)&server, slen)==-1) {
+    if (sendto(s, buf, BUFLEN, 0, (struct sockaddr *)&server, slen) == -1) {
         perror("sendto()");
     }
 
@@ -78,7 +79,7 @@ return_type make_remote_call(
     memset(buf, 0, BUFLEN);
     buf_position = buf;
 
-    if (recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *)&server, &slen)==-1) {
+    if (recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *)&server, &slen) == -1) {
         perror("recvfrom()");
     }
 
