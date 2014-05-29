@@ -6,6 +6,8 @@ return_type r;
 
 return_type add(const int nparams, arg_type* a)
 {
+    printf("start add\n");
+    //return r;
     if(nparams != 2) {
 	/* Error! */
 	r.return_val = NULL;
@@ -27,7 +29,7 @@ return_type add(const int nparams, arg_type* a)
     ret_int = i+j;
     r.return_val = (void *)(&ret_int);
     r.return_size = sizeof(int);
-
+    printf("value of return value: %d\n", (*(int *)r.return_val));
     return r;
 }
 
@@ -36,7 +38,6 @@ int main() {
     register_procedure("add2",2,add);
     register_procedure("testAdd2",2,add);
     register_procedure("23s",2,add);
-    register_procedure("add2",2,add);
     launch_server();
 
     /* should never get here, because

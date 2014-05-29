@@ -112,6 +112,7 @@ void launch_server()
         printf("Received packet from %s:%d\nData: %s\n\n",
                 inet_ntoa(client.sin_addr), ntohs(client.sin_port), buf);
         
+         
         char* buf_ptr = buf;
         char* proc_name;;
         int nparams;
@@ -136,16 +137,17 @@ void launch_server()
        // generate a list of arg list
        arg_type* at;
        at = (arg_type *) malloc(sizeof(arg_type)); 
-    //   at -> next = NULL;
+       // iterate through param numbers and build arglist
        for (cnt = 0; cnt < nparams; cnt ++){
            arg_type* at_tmp;
            at_tmp = (arg_type *)malloc(sizeof(arg_type));
            void* arg_v;
            int arg_s;
            buf_ptr += 4;
-           memcpy(&arg_s, buf_ptr,4);
+           memcpy(&arg_s, buf_ptr,sizeof(int));
            buf_ptr += sizeof(arg_s);
-           memcpy (&arg_v, buf_ptr, arg_s);
+           arg_v = malloc(arg_s);
+           memcpy (arg_v, buf_ptr, arg_s);
            at_tmp -> arg_val = arg_v;
            at_tmp -> arg_size = arg_s; 
            if (cnt == 0){
@@ -155,18 +157,9 @@ void launch_server()
              at -> next = at_tmp;
            } 
 
-           printf("%i\n", at_tmp->arg_val);    
-           //delete at_tmp; 
        }
        
-       // copy first param
-      // buf_ptr += 8;
-      // memcpy(&param1, buf_ptr,4);
-       // copy second param
-    //   buf_ptr += 8;
-     //  memcpy(&param2, buf_ptr,4);
-      // printf("number of params is: %i  name of procedure is : %s name of param1: %i name of param2: %i\n ",nparams, &proc_name, param1, param2);  
-        
+       // lookup function and create return type 
        db* tmp;
        tmp  = head;
              
@@ -174,10 +167,26 @@ void launch_server()
        while (tmp->next != NULL){
            char* str = tmp->proc_name;
          if (strcmp(str,proc_name)==0){
-       //        return_type rt (*(tmp->fnpoint)) (nparams, arg_type *);     
-              printf("matching string found \n");  
-              registered_proc = 1; 
-              break;   
+            return_type r;
+            const int params_num = nparams; 
+            r = (*(tmp->fnpoint))(params_num, at);
+
+            // return r to client
+            memset(buf,0,BUFLEN);
+            buf_ptr = buf;
+
+            memcpy(buf_ptr, &r.return_size, sizeof(int));
+            buf_ptr += sizeof(int);
+            memcpy(buf_ptr,r.return_val,r.return_size);
+
+            // build a client struct
+            if (sendto(s,buf, BUFLEN,0,(struct sockaddr *)&client,slen)==-1){
+                perror("sendto()");
+            }
+                   
+
+            registered_proc = 1; 
+            break;   
           }
           printf("%s\n",tmp->proc_name);
           tmp = tmp -> next;
@@ -186,11 +195,13 @@ void launch_server()
        if (registered_proc == 0){
             printf("error\n");
        }
+        // print the parameters
+        /*
         memcpy(&nparams, buf+sizeof(proc_name), 4);
         memcpy(&param1, buf+sizeof(proc_name)+8,4);
         memcpy(&param2, buf+sizeof(proc_name)+16,4);
         printf("number of params is: %i  name of procedure is : %s name of param1: %i name of param2: %i \n ",nparams, proc_name, param1, param2);  
-  
+        */
        /*
         int j = 0;
         for ( j =0; j < BUFLEN; j++){
