@@ -95,35 +95,36 @@ void launch_server()
 
     // Server loops forever, waiting for UDP packets
     while(1) {
-        if (recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *) &client, &slen)==-1) {
-            perror("recvfrom()");
-        }
+       if (recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *) &client, &slen)==-1) {
+           perror("recvfrom()");
+       }
 
-        printf("Received packet from %s:%d\nData: %s\n\n",
+       printf("Received packet from %s:%d\nData: %s\n\n",
                 inet_ntoa(client.sin_addr), ntohs(client.sin_port), buf);
         
          
-        char* buf_ptr = buf;
-        char* proc_name;
-        int nparams;
+       char* buf_ptr = buf;
+       char* proc_name;
+       int nparams;
 
         /* Copy procedure name */
         // Get size of procedure name string
-        int num_chars = strlen(buf_ptr) + 1;
+       int num_chars = strlen(buf_ptr) + 1;
 
         // Allocate memory for procedure name
-        proc_name = malloc(sizeof(char) * num_chars);
+       proc_name = malloc(sizeof(char) * num_chars);
 
         // Copy procedure name from buffer
-        strcpy(proc_name, buf_ptr);
+       strcpy(proc_name, buf_ptr);
 
-        buf_ptr += sizeof(proc_name);
+       buf_ptr += sizeof(proc_name);
 
         // Copy params
        memcpy(&nparams, buf_ptr, 4);
        // generate a list of arg list
-       arg_type* at;
+       arg_type* at, * tail;
        at = (arg_type *) malloc(sizeof(arg_type)); 
+       tail = at;
        // iterate through param numbers and build arglist
        int cnt = 0;
        for ( cnt = 0; cnt < nparams; cnt ++){
@@ -144,12 +145,13 @@ void launch_server()
             
            if (cnt == 0){
              at = at_tmp;
+             tail = at;
            }
            else {
-             at -> next = at_tmp;
+             tail -> next = at_tmp;
+             tail = tail -> next; 
            } 
 
-           
 
        }
        
