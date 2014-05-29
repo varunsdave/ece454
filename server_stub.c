@@ -76,8 +76,7 @@ bool register_procedure(const char *procedure_name,
 
 void launch_server()
 {
-    
-    int fd; 
+    int fd;
     struct ifreq ifr;
     fd = socket(AF_INET, SOCK_DGRAM,0 );
     ifr.ifr_addr.sa_family = AF_INET;
@@ -103,6 +102,8 @@ void launch_server()
     if (bind(s, (struct sockaddr *) &server, sizeof(server))==-1) {
         perror("bind");
     }
+
+    // Server loops forever, waiting for UDP packets
     while(1) {
         if (recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *) &client, &slen)==-1) {
             perror("recvfrom()");
@@ -111,22 +112,33 @@ void launch_server()
         printf("Received packet from %s:%d\nData: %s\n\n",
                 inet_ntoa(client.sin_addr), ntohs(client.sin_port), buf);
         
-       char *  buf_ptr = buf; 
-        char * proc_name;;
-       // printf ("before increment of buf: %i \n", buf_ptr);
-       // buf_ptr += sizeof(procedure_name);
-       // printf ("after increment of buf ptr: %i \n", buf_ptr); 
-       // void *  nparams = &buf[*buf_ptr];
-       // printf ("procedure name is : %s \n", procedure_name);
-       // printf ("naparams is: %i \n", nparams);
-       int nparams;
-       void * param1;
-       void * param2; 
-       memcpy(&proc_name, buf_ptr, 6);
-       memcpy(&nparams, buf+sizeof(proc_name), 4);
-       memcpy(&param1, buf+sizeof(proc_name)+8,4);
-       memcpy(&param2, buf+sizeof(proc_name)+16,4);
-       printf("number of params is: %i  name of procedure is : %s name of param1: %i name of param2: %i \n ",nparams, &proc_name, param1, param2);  
+        char* buf_ptr = buf;
+        char* proc_name;;
+        // printf ("before increment of buf: %i \n", buf_ptr);
+        // buf_ptr += sizeof(procedure_name);
+        // printf ("after increment of buf ptr: %i \n", buf_ptr);
+        // void *  nparams = &buf[*buf_ptr];
+        // printf ("procedure name is : %s \n", procedure_name);
+        // printf ("naparams is: %i \n", nparams);
+        int nparams;
+        void* param1;
+        void* param2;
+
+        /* Copy procedure name */
+        // Get size of procedure name string
+        int num_chars = strlen(buf_ptr) + 1;
+
+        // Allocate memory for procedure name
+        proc_name = malloc(sizeof(char) * num_chars);
+
+        // Copy procedure name from buffer
+        strcpy(proc_name, buf_ptr);
+
+        // Copy params
+        memcpy(&nparams, buf+sizeof(proc_name), 4);
+        memcpy(&param1, buf+sizeof(proc_name)+8,4);
+        memcpy(&param2, buf+sizeof(proc_name)+16,4);
+        printf("number of params is: %i  name of procedure is : %s name of param1: %i name of param2: %i \n ",nparams, proc_name, param1, param2);  
   
         int j = 0;
         for ( j =0; j < BUFLEN; j++){
