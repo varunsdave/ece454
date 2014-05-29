@@ -14,14 +14,14 @@
 #define PORT 9001
 
 struct fn_db{
-     char * proc_name;
+     char* proc_name;
      fp_type fnpoint;     
-     struct fn_db *next ; 
+     struct fn_db* next ; 
 };
 
 typedef struct fn_db db; 
-db * cur;
-db * head = NULL;
+db* cur;
+db* head = NULL;
 
 bool register_procedure(const char *procedure_name,
     const int nparams,
@@ -40,7 +40,7 @@ bool register_procedure(const char *procedure_name,
     }
     // find if function is already registered
     else {
-         db * tmp = head;
+         db* tmp = head;
         
          while (tmp -> next != NULL){
             // printf("%s\n", tmp->proc_name);
@@ -52,7 +52,7 @@ bool register_procedure(const char *procedure_name,
          }
          // the procedure is not to be found
          // register it in the dtabase
-	 db * new_entry;
+	 db* new_entry;
          new_entry = (db *) malloc(sizeof(db));
          new_entry -> proc_name = (char *) procedure_name;
          new_entry -> fnpoint = fnpointer;
@@ -134,11 +134,11 @@ void launch_server()
        memcpy(&nparams, buf_ptr, 4);
        int cnt = 0;
        // generate a list of arg list
-       arg_type * at;
+       arg_type* at;
        at = (arg_type *) malloc(sizeof(arg_type)); 
     //   at -> next = NULL;
        for (cnt = 0; cnt < nparams; cnt ++){
-           arg_type * at_tmp;
+           arg_type* at_tmp;
            at_tmp = (arg_type *)malloc(sizeof(arg_type));
            void* arg_v;
            int arg_s;
@@ -167,12 +167,12 @@ void launch_server()
      //  memcpy(&param2, buf_ptr,4);
       // printf("number of params is: %i  name of procedure is : %s name of param1: %i name of param2: %i\n ",nparams, &proc_name, param1, param2);  
         
-       db * tmp;
+       db* tmp;
        tmp  = head;
              
        int registered_proc = 0; // if entry is not registered break
        while (tmp->next != NULL){
-           char * str = tmp->proc_name;
+           char* str = tmp->proc_name;
          if (strcmp(str,proc_name)==0){
        //        return_type rt (*(tmp->fnpoint)) (nparams, arg_type *);     
               printf("matching string found \n");  
