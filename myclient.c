@@ -3,14 +3,14 @@
 
 int main()
 {
-    int a = -10, b = 20;
+    int a = -10, b = 25;
     return_type ans = make_remote_call("exelinux3.uwaterloo.ca",
 	                               5673,
                                    "addtwo", 2,
 	                               sizeof(int), (void *)(&a),
 	                               sizeof(int), (void *)(&b));
-    //int i = *(int *)(ans.return_val);
-    //printf("client, got result: %d\n", i);
+    int i = *(int *)(ans.return_val);
+    printf("client, got result: %d\n", i);
 
     return 0;
 }
