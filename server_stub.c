@@ -7,22 +7,64 @@
 #include <unistd.h>
 #include <net/if.h>
 #include <sys/ioctl.h>
-
+#include <stdlib.h>
 #include "ece454rpc_types.h"
 
 #define BUFLEN 512
 #define PORT 9001
 
+struct fn_db{
+     char * proc_name;
+     fp_type fnpoint;     
+     struct fn_db *next ; 
+};
+
+typedef struct fn_db db; 
+db * cur;
+db * head = NULL;
+
 bool register_procedure(const char *procedure_name,
     const int nparams,
     fp_type fnpointer)
 {
+    if (head == NULL){
+        cur = (db *) malloc(sizeof(db));
+        cur -> proc_name = (char *)  procedure_name;
+        cur -> fnpoint = fnpointer;
+        cur -> next = head;
+        head = cur;
+        cur = head;
+        return true;
+    }
+    // find if function is already registered
+    else {
+         db * tmp = head;
+        
+         while (tmp -> next != NULL){
+             if (strcmp(tmp->proc_name, procedure_name) == 0){
+                   return false;
+             }
+             tmp = tmp -> next;
+         }
+         // the procedure is not to be found
+         // register it in the dtabase
+	 db * new_entry;
+         new_entry = (db *) malloc(sizeof(db));
+         new_entry -> proc_name = (char *) procedure_name;
+         new_entry -> fnpoint = fnpointer;
+         new_entry -> next = NULL;
+         cur -> next = new_entry;
+         cur = new_entry;
+         return true;
+        
+    }
     printf("register\n");
     return 0;
 }
 
 void launch_server()
 {
+    
     int fd; 
     struct ifreq ifr;
     fd = socket(AF_INET, SOCK_DGRAM,0 );
