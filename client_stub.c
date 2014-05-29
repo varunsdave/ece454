@@ -92,19 +92,15 @@ return_type make_remote_call(
         perror("recvfrom()");
     }
 
-    int return_size;
-    memcpy(&return_size, buf_position, sizeof(int));
-    buf_position += sizeof(int);
-
-    void* return_value = malloc(return_size);
-    memcpy(return_value, buf_position, return_size);
-
-    close(s);
-
     return_type r;
 
-    r.return_size = return_size;
-    r.return_val = return_value;
+    memcpy(&r.return_size, buf_position, sizeof(int));
+    buf_position += sizeof(int);
+
+    r.return_val = malloc(r.return_size);
+    memcpy(r.return_val, buf_position, r.return_size);
+
+    close(s);
 
     return r;
 }
