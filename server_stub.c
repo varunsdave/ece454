@@ -190,7 +190,24 @@ void launch_server()
        }
        // process not registered, return an error to stdio
        if (registered_proc == 0){
-            printf("error\n");
+           return_type r; 
+           //r = (*(tmp->fnpoint))(params_num,at);
+           r.return_val = NULL;
+           r.return_size = 0;
+           
+
+           // return r to client
+           memset(buf,0,BUFLEN);
+           buf_ptr = buf;
+           memcpy(buf_ptr,&r.return_size,sizeof(int));
+           buf_ptr += sizeof(int);
+           memcpy(buf_ptr, r.return_val, r.return_size);
+
+           // send the struct
+           if (sendto(s, buf, BUFLEN, 0, (struct sockaddr *)&client, slen) == -1){
+               perror("sendto()");
+           }
+           //printf("error\n");
        }
 
     }
