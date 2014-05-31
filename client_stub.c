@@ -14,6 +14,23 @@
 
 return_type make_remote_call(const char *servernameorip, const int serverportnumber,
                              const char *procedure_name, const int nparams, ...) {
+    /* Convert server name to ip address */
+    // http://stackoverflow.com/questions/7725498/getaddrinfo-function-returns-the-wrong-ip-address
+    struct addrinfo hints, *res;
+    struct in_addr addr;
+    int err;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_family = AF_INET;
+    if ((err = getaddrinfo(servernameorip, NULL, &hints, &res)) != 0) {
+        printf("getaddrinfo(): %s\n", gai_strerror(err));
+        exit(1);
+    }
+    addr.s_addr = ((struct sockaddr_in *)(res->ai_addr))->sin_addr.s_addr;
+    char* server_ip = inet_ntoa(addr);
+    freeaddrinfo(res);
+
+    // Allocate UDP buffer
     char buf[BUFLEN] = "";
     char* buf_position = buf;
 
@@ -57,7 +74,7 @@ return_type make_remote_call(const char *servernameorip, const int serverportnum
     memset((char *) &server, 0, sizeof(server));
     server.sin_family = AF_INET;
     server.sin_port = htons(serverportnumber);
-    if (inet_aton(servernameorip, &server.sin_addr) == 0) {
+    if (inet_aton(server_ip, &server.sin_addr) == 0) {
         fprintf(stderr, "inet_aton() failed\n");
         exit(1);
     }
