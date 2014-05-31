@@ -8,8 +8,8 @@ client: libstubs.a myclient.o
 server: libstubs.a myserver.o
 	gcc myserver.o -L. -lstubs -o server
 
-libstubs.a: server_stub.o client_stub.o
-	ar r libstubs.a server_stub.o client_stub.o
+libstubs.a: server_stub.o client_stub.o mybind.o
+	ar r libstubs.a server_stub.o client_stub.o mybind.o
 
 $(objects): %.o: %.c ece454rpc_types.h
 	gcc -c $< -o $@

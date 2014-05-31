@@ -11,16 +11,26 @@
 #include "ece454rpc_types.h"
 
 #define BUFLEN 512
-#define SRV_IP "127.0.0.1"
-#define PORT 9001
 
-return_type make_remote_call(
-    const char *servernameorip,
-    const int serverportnumber,
-    const char *procedure_name,
-    const int nparams,
-    ...)
-{
+return_type make_remote_call(const char *servernameorip, const int serverportnumber,
+                             const char *procedure_name, const int nparams, ...) {
+    /* Convert server name to ip address */
+    // http://stackoverflow.com/questions/7725498/getaddrinfo-function-returns-the-wrong-ip-address
+    struct addrinfo hints, *res;
+    struct in_addr addr;
+    int err;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_family = AF_INET;
+    if ((err = getaddrinfo(servernameorip, NULL, &hints, &res)) != 0) {
+        printf("getaddrinfo(): %s\n", gai_strerror(err));
+        exit(1);
+    }
+    addr.s_addr = ((struct sockaddr_in *)(res->ai_addr))->sin_addr.s_addr;
+    char* server_ip = inet_ntoa(addr);
+    freeaddrinfo(res);
+
+    // Allocate UDP buffer
     char buf[BUFLEN] = "";
     char* buf_position = buf;
 
@@ -37,8 +47,7 @@ return_type make_remote_call(
     va_start(valist, nparams);
 
     int i;
-    for (i = 0; i < nparams; i++)
-    {
+    for (i = 0; i < nparams; i++) {
         // Copy size of param to buf
         int size = va_arg(valist, int);
         memcpy(buf_position, &size, sizeof(int));
@@ -59,13 +68,13 @@ return_type make_remote_call(
         perror("socket()");
     }
 
-    // Build sockaddr_in
+    // Build sockaddr_in (http://www.abc.se/~m6695/udp.html)
     struct sockaddr_in server;
     int slen = sizeof(server);
     memset((char *) &server, 0, sizeof(server));
     server.sin_family = AF_INET;
-    server.sin_port = htons(PORT);
-    if (inet_aton(SRV_IP, &server.sin_addr) == 0) {
+    server.sin_port = htons(serverportnumber);
+    if (inet_aton(server_ip, &server.sin_addr) == 0) {
         fprintf(stderr, "inet_aton() failed\n");
         exit(1);
     }
