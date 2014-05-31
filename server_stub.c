@@ -184,7 +184,17 @@ void launch_server()
                    
             // successfully sent the return vlaue to clinet. Server process completed
             registered_proc = 1; 
+            arg_type *node = at;
+            while (node != NULL){
+               arg_type *temp_arg = node;
+               node = node->next; 
+               free(temp_arg);
+               
+            }
+            free(node);
+            free(tail);
             break;   
+            
           }
           tmp = tmp->next;
        }
