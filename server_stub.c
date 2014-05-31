@@ -11,7 +11,6 @@
 #include "ece454rpc_types.h"
 
 #define BUFLEN 512
-#define PORT 9001
 
 /*
     Database struct 
@@ -125,7 +124,7 @@ void launch_server() {
            
             buf_ptr += sizeof(int);
            
-            memcpy(&arg_s, buf_ptr,sizeof(int));
+            memcpy(&arg_s, buf_ptr, sizeof(int));
             buf_ptr += sizeof(arg_s);
             arg_v = malloc(arg_s);
             memcpy (arg_v, buf_ptr, arg_s);
@@ -174,14 +173,14 @@ void launch_server() {
           }
           tmp = tmp->next;
        }
-       // procedure not registered, return an error to stdio
+       // Procedure not registered
        if (registered_proc == 0){
            return_type r; 
            r.return_val = NULL;
            r.return_size = 0;
 
            // return r to client
-           memset(buf,0,BUFLEN);
+           memset(buf, 0, BUFLEN);
            buf_ptr = buf;
            memcpy(buf_ptr, &r.return_size, sizeof(int));
            buf_ptr += sizeof(int);
@@ -191,7 +190,6 @@ void launch_server() {
            if (sendto(s, buf, BUFLEN, 0, (struct sockaddr *)&client, slen) == -1){
                perror("sendto()");
            }
-           //printf("error\n");
        }
     }
 
