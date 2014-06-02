@@ -67,6 +67,11 @@ bool register_procedure(const char *procedure_name, const int nparams,
 void launch_server() {
     int fd;
     struct ifreq ifr;
+
+    // gets the ip address and the port the server connected to
+    // the code is gathered from:
+    // http://www.geekpage.jp/en/programming/linux-network/get-ipaddr.php
+    
     fd = socket(AF_INET, SOCK_DGRAM, 0);
     ifr.ifr_addr.sa_family = AF_INET;
 
@@ -177,7 +182,7 @@ void launch_server() {
                
             }
             free(node);
-            free(tail);
+            
             break;   
             
           }
