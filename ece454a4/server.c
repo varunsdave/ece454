@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "ece454rpc_types.h"
+#include "simplified_rpc/ece454rpc_types.h"
 
 #if 0
 #define _DEBUG_1_
@@ -130,7 +130,7 @@ return_type concatStr(const int nparams, arg_type *a) {
 
 int main(int argc, char *argv[] ) {
     if (argc < 2){
-        printf("usage: %s <server ../myFolderName>\n", argv[0]);
+        printf("usage: %s <folder_name>\n", argv[0]);
         return 0;
     } 
     register_procedure("addtwo", 2, add);
