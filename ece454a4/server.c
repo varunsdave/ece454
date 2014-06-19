@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "ece454_fs.h"
 #include "simplified_rpc/ece454rpc_types.h"
 
 #if 0
@@ -21,77 +22,75 @@ return_type r;
 
 extern printRegisteredProcedures();
 
-return_type add(const int nparams, arg_type* a)
-{
-    if(nparams != 2) {
-	/* Error! */
-	r.return_val = NULL;
-	r.return_size = 0;
-	return r;
-    }
+int fsMount(const char *srvIpOrDomName, const unsigned int srvPort, const char *localFolderName) {
+    struct stat sbuf;
 
-    if(a->arg_size != sizeof(int) ||
-       a->next->arg_size != sizeof(int)) {
-	/* Error! */
-	r.return_val = NULL;
-	r.return_size = 0;
-	return r;
-    }
-
-    int i = *(int *)(a->arg_val);
-    int j = *(int *)(a->next->arg_val);
-
-    int *ret_int = (int *)malloc(sizeof(int));
-
-    *ret_int = i+j;
-    r.return_val = (void *)(ret_int);
-    r.return_size = sizeof(int);
-
-    return r;
+    return(stat(localFolderName, &sbuf));
 }
 
-return_type pickFirst(const int nparams, arg_type *a) {
-    /* Pick the first of a list of stuff & return it */
-    if(nparams <= 0) {
-	r.return_val = NULL;
-	r.return_size = 0;
+int fsUnmount(const char *localFolderName) {
+    return 0;
+}
+
+FSDIR* fsOpenDir(const char *folderName) {
+    return(opendir(folderName));
+}
+
+int fsCloseDir(FSDIR *folder) {
+    return(closedir(folder));
+}
+
+struct fsDirent *fsReadDir(FSDIR *folder) {
+    const int initErrno = errno;
+    struct dirent *d = readdir(folder);
+
+    if(d == NULL) {
+    if(errno == initErrno) errno = 0;
+    return NULL;
+    }
+
+    if(d->d_type == DT_DIR) {
+    dent.entType = 1;
+    }
+    else if(d->d_type == DT_REG) {
+    dent.entType = 0;
     }
     else {
-	r.return_val = (void *)malloc(a->arg_size);
-	memcpy(r.return_val, a->arg_val, a->arg_size);
-	r.return_size = a->arg_size;
+    dent.entType = -1;
     }
 
-    return r;
+    memcpy(&(dent.entName), &(d->d_name), 256);
+    return &dent;
 }
 
-/* compar() below for use by qsort() */
-int compar(const void *a, const void *b) {
-    int i = *(int *)a;
-    int j = *(int *)b;
+int fsOpen(const char *fname, int mode) {
+    int flags = -1;
 
-    return i - j;
+    if(mode == 0) {
+    flags = O_RDONLY;
+    }
+    else if(mode == 1) {
+    flags = O_WRONLY | O_CREAT;
+    }
+
+    return(open(fname, flags, S_IRWXU));
 }
 
-return_type max(const int nparams, arg_type *a) {
-    /* Interprets the one arg as an array of integers.
-     * Returns them sorted.
-     * Note: we sort the arg a "in place". So no
-     * new memory is allocated. */
+int fsClose(int fd) {
+    return(close(fd));
+}
 
-    int *ia = (int *)malloc(a->arg_size);
-    memcpy(ia, a->arg_val, a->arg_size);
-    int n = (a->arg_size)/(sizeof(int));
+int fsRead(int fd, void *buf, const unsigned int count) {
+    return(read(fd, buf, (size_t)count));
+}
 
-    if(n < 0) {
-	r.return_val = NULL;
-	r.return_size = 0;
-    }
-    else {
-	qsort(ia, n, sizeof(int), compar);
-	r.return_size = (a->arg_size);
-	r.return_val = (void *)ia;
-    }
+int fsWrite(int fd, const void *buf, const unsigned int count) {
+    return(write(fd, buf, (size_t)count));
+}
+
+return_type fsRemove(const char *name) {
+    r.val = &(remove(name));
+    r.size = sizeof(int)
 
     return r;
 }
@@ -128,15 +127,14 @@ return_type concatStr(const int nparams, arg_type *a) {
     return r;
 }
 
-int main(int argc, char *argv[] ) {
+int main(int argc, char *argv[]) {
     if (argc < 2){
         printf("usage: %s <folder_name>\n", argv[0]);
         return 0;
     } 
-    register_procedure("addtwo", 2, add);
-    register_procedure("pickFirst", 2, pickFirst);
-    register_procedure("max_of_integer_array", 1, max);
-    register_procedure("concatenate_five_strings", 5, concatStr);
+
+    // Register all procedures
+    register_procedure("fsRemove", 1, fsRemove);
 
 #ifdef _DEBUG_1_
     printRegisteredProcedures();
