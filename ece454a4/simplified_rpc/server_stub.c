@@ -221,7 +221,11 @@ void freeRet(return_type r) {
     free(r.return_val);
 }
 
-void launch_server() {
+void launch_server(const char *folderName) {
+    
+
+      
+    
     int s = socket(AF_INET, SOCK_STREAM, 0);
     struct sockaddr_in a;
 
