@@ -128,7 +128,11 @@ return_type concatStr(const int nparams, arg_type *a) {
     return r;
 }
 
-int main() {
+int main(int argc, char *argv[] ) {
+    if (argc < 2){
+        printf("usage: %s <server ../myFolderName>\n", argv[0]);
+        return 0;
+    } 
     register_procedure("addtwo", 2, add);
     register_procedure("pickFirst", 2, pickFirst);
     register_procedure("max_of_integer_array", 1, max);
@@ -138,6 +142,6 @@ int main() {
     printRegisteredProcedures();
 #endif
 
-    launch_server();
+    launch_server(argv[1]);
     return 0;
 }
