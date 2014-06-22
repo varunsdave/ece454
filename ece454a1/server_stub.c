@@ -28,6 +28,7 @@ db* head = NULL;
 
 bool register_procedure(const char *procedure_name, const int nparams,
                         fp_type fnpointer) {
+    printf("Register procedure: %s %d\n", procedure_name, nparams);
     if (head == NULL) {
         current = malloc(sizeof(db));
         current->procedure_name = (char *)procedure_name;
@@ -114,10 +115,13 @@ void launch_server() {
         buf_ptr += sizeof(procedure_name);
         // Copy params
         memcpy(&nparams, buf_ptr, sizeof(int));
+        buf_ptr += sizeof(int);
         // generate a list of arg list
         arg_type* at, *tail;
         at = malloc(sizeof(arg_type)); 
         tail = at;
+
+        printf("Received call to %s\n", procedure_name);
 
         // iterate through param numbers and build arglist
         int cnt;
@@ -126,13 +130,15 @@ void launch_server() {
             arg_type* at_tmp = malloc(sizeof(arg_type));
             void* arg_v;
             int arg_s;
-           
-            buf_ptr += sizeof(int);
-           
+
             memcpy(&arg_s, buf_ptr, sizeof(int));
             buf_ptr += sizeof(arg_s);
+
             arg_v = malloc(arg_s);
-            memcpy (arg_v, buf_ptr, arg_s);
+            printf("argv: %p, buf %p, args %d\n", arg_v, buf_ptr, arg_s);
+            memcpy(arg_v, buf_ptr, arg_s);
+            buf_ptr += arg_s;
+
             at_tmp->arg_val = arg_v;
             at_tmp->arg_size = arg_s; 
                        
@@ -143,15 +149,14 @@ void launch_server() {
             else {
                 tail->next = at_tmp;
                 tail = tail->next; 
-            } 
+            }
         }
        
         // lookup function and create return type 
         db* tmp;
         tmp = head;
-             
         int registered_proc = 0; // if entry is not registered break
-        while (tmp->next != NULL) {
+        while (tmp == head || tmp->next != NULL) {
             char* str = tmp->procedure_name;
             if (strcmp(str, procedure_name) == 0) {
             return_type r;
