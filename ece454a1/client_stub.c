@@ -29,7 +29,7 @@ return_type make_remote_call(const char *servernameorip, const int serverportnum
     addr.s_addr = ((struct sockaddr_in *)(res->ai_addr))->sin_addr.s_addr;
     char* server_ip = inet_ntoa(addr);
     freeaddrinfo(res);
-
+    printf("passing in procedure: %s with %d paramteres \n",procedure_name,nparams);
     // Allocate UDP buffer
     char buf[BUFLEN] = "";
     char* buf_position = buf;
@@ -78,7 +78,7 @@ return_type make_remote_call(const char *servernameorip, const int serverportnum
         fprintf(stderr, "inet_aton() failed\n");
         exit(1);
     }
-
+    
     // Send buf to server
     if (sendto(s, buf, BUFLEN, 0, (struct sockaddr *)&server, slen) == -1) {
         perror("sendto()");
@@ -101,6 +101,6 @@ return_type make_remote_call(const char *servernameorip, const int serverportnum
     memcpy(r.return_val, buf_position, r.return_size);
 
     close(s);
-
+    printf("returned r value: %d \n",r.return_val);
     return r;
 }

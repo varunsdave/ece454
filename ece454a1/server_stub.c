@@ -18,6 +18,7 @@
 */ 
 struct fn_db {
      char* procedure_name;
+     int num_params;
      fp_type fnpoint;     
      struct fn_db* next ; 
 };
@@ -32,9 +33,12 @@ bool register_procedure(const char *procedure_name, const int nparams,
         current = malloc(sizeof(db));
         current->procedure_name = (char *)procedure_name;
         current->fnpoint = fnpointer;
+        current->num_params = nparams;
         current->next = NULL;;
         head = current;
         current = head;
+
+        printf("registered function name: %s, regsitered params: %d\n",procedure_name,nparams);
         return true;
     }
     // find if function is already registered
@@ -43,6 +47,7 @@ bool register_procedure(const char *procedure_name, const int nparams,
         
          while (tmp->next != NULL) {
              if (strcmp(tmp->procedure_name, procedure_name) == 0) {
+                   
                    fprintf(stderr, "possible duplicate entry\n");
                    return false;
              }
@@ -54,6 +59,7 @@ bool register_procedure(const char *procedure_name, const int nparams,
          new_entry = malloc(sizeof(db));
          new_entry->procedure_name = (char *)procedure_name;
          new_entry->fnpoint = fnpointer;
+         new_entry->num_params = nparams;
          new_entry->next = NULL;
          current->next = new_entry;
          current = new_entry;
@@ -92,7 +98,7 @@ void launch_server() {
     mybind(s, &server);
 
     printf("%s %d\n", inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr), ntohs(server.sin_port));
-
+    printf("start launch server()\n");
     // Server loops forever, waiting for UDP packets
     while (1) {
         if (recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *)&client, &slen)==-1) {
@@ -102,7 +108,7 @@ void launch_server() {
         char* buf_ptr = buf;
         char* procedure_name;
         int nparams;
-
+        printf("entered proc_name: %s, entered nparams: %d \n",procedure_name,nparams);
         /* Copy procedure name */
         // Get size of procedure name string
         int num_chars = strlen(buf_ptr) + 1;
@@ -154,33 +160,45 @@ void launch_server() {
         while (tmp->next != NULL) {
             char* str = tmp->procedure_name;
             if (strcmp(str, procedure_name) == 0) {
-            return_type r;
-            const int params_num = nparams; 
+              // check number of registered parameters:
+              int registered_params = tmp->num_params;
+              
+              return_type r;
+              const int params_num = nparams; 
 
-            // Call function
-            r = (*(tmp->fnpoint))(params_num, at);
+              if (params_num != registered_params){
+                 registered_proc = 0;
+                 
+                 printf("number of registered params do not match \n --  passed params: %i, registered params: %i \n",params_num, registered_params);
+                 break;
+              }
 
-            // return r to client
-            memset(buf, 0, BUFLEN);
-            buf_ptr = buf;
+              printf("call made to : %s function with: %i  parameters\n",procedure_name,params_num);           
+ 
+              // Call function
+              r = (*(tmp->fnpoint))(params_num, at);
 
-            memcpy(buf_ptr, &r.return_size, sizeof(int));
-            buf_ptr += sizeof(int);
-            memcpy(buf_ptr, r.return_val, r.return_size);
+              // return r to client
+              memset(buf, 0, BUFLEN);
+              buf_ptr = buf;
 
-            if (sendto(s, buf, BUFLEN, 0, (struct sockaddr *)&client, slen) == -1){
+              memcpy(buf_ptr, &r.return_size, sizeof(int));
+              buf_ptr += sizeof(int);
+              memcpy(buf_ptr, r.return_val, r.return_size);
+
+              if (sendto(s, buf, BUFLEN, 0, (struct sockaddr *)&client, slen) == -1){
                 perror("sendto()");
-            }
+              }
                    
-            // successfully sent the return vlaue to clinet. Server process completed
-            registered_proc = 1; 
-            arg_type *node = at;
-            while (node != NULL){
-               arg_type *temp_arg = node;
-               node = node->next; 
-               free(temp_arg);
+              // successfully sent the return vlaue to clinet. Server process completed
+              registered_proc = 1; 
+              arg_type *node = at;
+              while (node != NULL){
+                arg_type *temp_arg = node;
+                node = node->next; 
+                free(temp_arg);
                
-            }
+              }
             free(node);
             
             break;   
