@@ -127,8 +127,6 @@ void launch_server() {
         arg_type* at, *tail;
         at = NULL;
 
-        printf("received call to: %s, %d params\n", procedure_name, nparams);
-
         // iterate through param numbers and build arglist
         int cnt;
         for (cnt = 0; cnt < nparams; cnt++) {
@@ -184,7 +182,6 @@ void launch_server() {
         
                 // Call function
                 r = (*(tmp->fnpoint))(params_num, at);
-                printf("called function: %s\n", procedure_name);
 
                 // return r to client
                 memset(buf, 0, BUFLEN);
@@ -202,7 +199,6 @@ void launch_server() {
                 registered_proc = 1; 
                 arg_type *node = at;
                 while (node != NULL){
-                    printf("freeing\n");
                     arg_type *temp_arg = node;
                     node = node->next; 
                     free(temp_arg);
@@ -210,7 +206,6 @@ void launch_server() {
                 }
                 free(node);
 
-                printf("break\n");
                 break;
             }
             tmp = tmp->next;
