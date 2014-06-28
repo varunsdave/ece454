@@ -18,7 +18,11 @@
 */ 
 struct fn_db {
      char* procedure_name;
+<<<<<<< Updated upstream
      int num_params;
+=======
+     int param_num;
+>>>>>>> Stashed changes
      fp_type fnpoint;     
      struct fn_db* next ; 
 };
@@ -33,6 +37,7 @@ bool register_procedure(const char *procedure_name, const int nparams,
     if (head == NULL) {
         current = malloc(sizeof(db));
         current->procedure_name = (char *)procedure_name;
+        current->param_num = nparams;
         current->fnpoint = fnpointer;
         current->num_params = nparams;
         current->next = NULL;;
@@ -59,6 +64,7 @@ bool register_procedure(const char *procedure_name, const int nparams,
 	 db* new_entry;
          new_entry = malloc(sizeof(db));
          new_entry->procedure_name = (char *)procedure_name;
+         new_entry->param_num = nparams;
          new_entry->fnpoint = fnpointer;
          new_entry->num_params = nparams;
          new_entry->next = NULL;
@@ -165,6 +171,7 @@ void launch_server() {
         while (tmp == head || tmp->next != NULL) {
             char* str = tmp->procedure_name;
             if (strcmp(str, procedure_name) == 0) {
+<<<<<<< Updated upstream
               // check number of registered parameters:
               int registered_params = tmp->num_params;
               
@@ -192,6 +199,27 @@ void launch_server() {
               memcpy(buf_ptr, r.return_val, r.return_size);
 
               if (sendto(s, buf, BUFLEN, 0, (struct sockaddr *)&client, slen) == -1){
+=======
+            return_type r;
+            const int params_num = nparams; 
+            if (tmp->param_num != params_num){
+                registered_proc = 0;
+                break;
+            }
+            
+            // Call function
+            r = (*(tmp->fnpoint))(params_num, at);
+            printf("return value on server is: %s\n",r.return_val);
+            // return r to client
+            memset(buf, 0, BUFLEN);
+            buf_ptr = buf;
+
+            memcpy(buf_ptr, &r.return_size, sizeof(int));
+            buf_ptr += sizeof(int);
+            memcpy(buf_ptr, r.return_val, r.return_size);
+
+            if (sendto(s, buf, BUFLEN, 0, (struct sockaddr *)&client, slen) == -1){
+>>>>>>> Stashed changes
                 perror("sendto()");
               }
                    

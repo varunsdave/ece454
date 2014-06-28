@@ -15,4 +15,4 @@ $(objects): %.o: %.c ece454rpc_types.h
 	gcc -c $< -o $@
 
 clean:
-	rm -rf client server *.o core *.a
+	rm -rf client server *.o core *.a *.out

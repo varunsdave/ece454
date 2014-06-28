@@ -4,7 +4,7 @@
 int main()
 {
     int a = -10, b = 25, c = 50;
-    return_type ans = make_remote_call("localhost",
+    return_type ans = make_remote_call("129.97.56.15",
 	                               10000,
                                    "addtwo", 3,
 	                               sizeof(int), (void *)(&a),

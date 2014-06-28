@@ -15,8 +15,18 @@ struct fsDirent dent;
 
 int fsMount(const char *srvIpOrDomName, const unsigned int srvPort, const char *localFolderName) {
     struct stat sbuf;
+    int mountErrNo;
+    stat(localFolderName, &sbuf);
 
-    return(stat(localFolderName, &sbuf));
+    if(S_ISDIR(sbuf.st_mode)){
+        return 0;
+    }
+    else{
+        mountErrNo = -1;
+
+        errno = ENOTDIR;
+        return -1;
+    }
 }
 
 int fsUnmount(const char *localFolderName) {
