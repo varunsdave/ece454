@@ -18,11 +18,8 @@
 */ 
 struct fn_db {
      char* procedure_name;
-<<<<<<< Updated upstream
      int num_params;
-=======
      int param_num;
->>>>>>> Stashed changes
      fp_type fnpoint;     
      struct fn_db* next ; 
 };
@@ -33,7 +30,6 @@ db* head = NULL;
 
 bool register_procedure(const char *procedure_name, const int nparams,
                         fp_type fnpointer) {
-    printf("Register procedure: %s %d\n", procedure_name, nparams);
     if (head == NULL) {
         current = malloc(sizeof(db));
         current->procedure_name = (char *)procedure_name;
@@ -44,7 +40,6 @@ bool register_procedure(const char *procedure_name, const int nparams,
         head = current;
         current = head;
 
-        printf("registered function name: %s, regsitered params: %d\n",procedure_name,nparams);
         return true;
     }
     // find if function is already registered
@@ -61,17 +56,17 @@ bool register_procedure(const char *procedure_name, const int nparams,
          }
          // the procedure is not to be found
          // register it in the dtabase
-	 db* new_entry;
-         new_entry = malloc(sizeof(db));
-         new_entry->procedure_name = (char *)procedure_name;
-         new_entry->param_num = nparams;
-         new_entry->fnpoint = fnpointer;
-         new_entry->num_params = nparams;
-         new_entry->next = NULL;
-         current->next = new_entry;
-         current = new_entry;
+        db* new_entry;
+        new_entry = malloc(sizeof(db));
+        new_entry->procedure_name = (char *)procedure_name;
+        new_entry->param_num = nparams;
+        new_entry->fnpoint = fnpointer;
+        new_entry->num_params = nparams;
+        new_entry->next = NULL;
+        current->next = new_entry;
+        current = new_entry;
         
-         return true;
+        return true;
     }
 
     return 0;
@@ -105,7 +100,7 @@ void launch_server() {
     mybind(s, &server);
 
     printf("%s %d\n", inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr), ntohs(server.sin_port));
-    printf("start launch server()\n");
+
     // Server loops forever, waiting for UDP packets
     while (1) {
         if (recvfrom(s, buf, BUFLEN, 0, (struct sockaddr *)&client, &slen)==-1) {
@@ -115,7 +110,7 @@ void launch_server() {
         char* buf_ptr = buf;
         char* procedure_name;
         int nparams;
-        printf("entered proc_name: %s, entered nparams: %d \n",procedure_name,nparams);
+
         /* Copy procedure name */
         // Get size of procedure name string
         int num_chars = strlen(buf_ptr) + 1;
@@ -130,10 +125,9 @@ void launch_server() {
         buf_ptr += sizeof(int);
         // generate a list of arg list
         arg_type* at, *tail;
-        at = malloc(sizeof(arg_type)); 
-        tail = at;
+        at = NULL;
 
-        printf("Received call to %s\n", procedure_name);
+        printf("received call to: %s, %d params\n", procedure_name, nparams);
 
         // iterate through param numbers and build arglist
         int cnt;
@@ -147,12 +141,12 @@ void launch_server() {
             buf_ptr += sizeof(arg_s);
 
             arg_v = malloc(arg_s);
-            printf("argv: %p, buf %p, args %d\n", arg_v, buf_ptr, arg_s);
             memcpy(arg_v, buf_ptr, arg_s);
             buf_ptr += arg_s;
 
             at_tmp->arg_val = arg_v;
             at_tmp->arg_size = arg_s; 
+            at_tmp->next = NULL;
                        
             if (cnt == 0) {
                 at = at_tmp;
@@ -168,95 +162,78 @@ void launch_server() {
         db* tmp;
         tmp = head;
         int registered_proc = 0; // if entry is not registered break
-        while (tmp == head || tmp->next != NULL) {
+
+        while (tmp != NULL) {
             char* str = tmp->procedure_name;
             if (strcmp(str, procedure_name) == 0) {
-<<<<<<< Updated upstream
-              // check number of registered parameters:
-              int registered_params = tmp->num_params;
-              
-              return_type r;
-              const int params_num = nparams; 
+                // check number of registered parameters:
+                int registered_params = tmp->num_params;
 
-              if (params_num != registered_params){
-                 registered_proc = 0;
-                 
-                 printf("number of registered params do not match \n --  passed params: %i, registered params: %i \n",params_num, registered_params);
-                 break;
-              }
+                const int params_num = nparams; 
 
-              printf("call made to : %s function with: %i  parameters\n",procedure_name,params_num);           
- 
-              // Call function
-              r = (*(tmp->fnpoint))(params_num, at);
+                if (params_num != registered_params){
+                    registered_proc = 0;
+                    break;
+                }
 
-              // return r to client
-              memset(buf, 0, BUFLEN);
-              buf_ptr = buf;
+                return_type r;
+                if (tmp->param_num != params_num){
+                    registered_proc = 0;
+                    break;
+                }
+        
+                // Call function
+                r = (*(tmp->fnpoint))(params_num, at);
+                printf("called function: %s\n", procedure_name);
 
-              memcpy(buf_ptr, &r.return_size, sizeof(int));
-              buf_ptr += sizeof(int);
-              memcpy(buf_ptr, r.return_val, r.return_size);
+                // return r to client
+                memset(buf, 0, BUFLEN);
+                buf_ptr = buf;
 
-              if (sendto(s, buf, BUFLEN, 0, (struct sockaddr *)&client, slen) == -1){
-=======
-            return_type r;
-            const int params_num = nparams; 
-            if (tmp->param_num != params_num){
-                registered_proc = 0;
+                memcpy(buf_ptr, &r.return_size, sizeof(int));
+                buf_ptr += sizeof(int);
+                memcpy(buf_ptr, r.return_val, r.return_size);
+
+                if (sendto(s, buf, BUFLEN, 0, (struct sockaddr *)&client, slen) == -1){
+                    perror("sendto()");
+                }
+               
+                // successfully sent the return vlaue to clinet. Server process completed
+                registered_proc = 1; 
+                arg_type *node = at;
+                while (node != NULL){
+                    printf("freeing\n");
+                    arg_type *temp_arg = node;
+                    node = node->next; 
+                    free(temp_arg);
+           
+                }
+                free(node);
+
+                printf("break\n");
                 break;
             }
-            
-            // Call function
-            r = (*(tmp->fnpoint))(params_num, at);
-            printf("return value on server is: %s\n",r.return_val);
+            tmp = tmp->next;
+        }
+
+        // Procedure not registered
+        if (registered_proc == 0) {
+            return_type r; 
+            r.return_val = NULL;
+            r.return_size = 0;
+
             // return r to client
             memset(buf, 0, BUFLEN);
             buf_ptr = buf;
-
             memcpy(buf_ptr, &r.return_size, sizeof(int));
             buf_ptr += sizeof(int);
             memcpy(buf_ptr, r.return_val, r.return_size);
 
+            // send the struct
             if (sendto(s, buf, BUFLEN, 0, (struct sockaddr *)&client, slen) == -1){
->>>>>>> Stashed changes
                 perror("sendto()");
-              }
-                   
-              // successfully sent the return vlaue to clinet. Server process completed
-              registered_proc = 1; 
-              arg_type *node = at;
-              while (node != NULL){
-                arg_type *temp_arg = node;
-                node = node->next; 
-                free(temp_arg);
-               
-              }
-            free(node);
-            
-            break;   
-            
-          }
-          tmp = tmp->next;
-       }
-       // Procedure not registered
-       if (registered_proc == 0){
-           return_type r; 
-           r.return_val = NULL;
-           r.return_size = 0;
-
-           // return r to client
-           memset(buf, 0, BUFLEN);
-           buf_ptr = buf;
-           memcpy(buf_ptr, &r.return_size, sizeof(int));
-           buf_ptr += sizeof(int);
-           memcpy(buf_ptr, r.return_val, r.return_size);
-
-           // send the struct
-           if (sendto(s, buf, BUFLEN, 0, (struct sockaddr *)&client, slen) == -1){
-               perror("sendto()");
-           }
-       }
+            }
+        }
     }
 
     // should never reach here
