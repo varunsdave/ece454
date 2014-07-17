@@ -5,8 +5,8 @@ all: fs_client server
 
 fs_client: fs_client.o client-api.a libstubs.a
 
-server: libstubs.a server.o
-	gcc server.o -L. -lstubs -o server
+server: libstubs.a fs_server.o
+	gcc fs_server.o -L. -lstubs -o fsServer
 
 libstubs.a: simplified_rpc/server_stub.o simplified_rpc/client_stub.o simplified_rpc/helper.o simplified_rpc/mybind.o
 	ar r libstubs.a simplified_rpc/server_stub.o simplified_rpc/client_stub.o simplified_rpc/helper.o simplified_rpc/mybind.o
@@ -21,4 +21,4 @@ $(OBJECTS2): simplified_rpc/%.o: simplified_rpc/%.c
 	gcc -c $< -o $@
 
 clean:
-	rm -rf *.o core *.a fs_client simplified_rpc/*.a simplified_rpc/*.o server
+	rm -rf *.o core *.a fs_client simplified_rpc/*.a simplified_rpc/*.o fsServer
