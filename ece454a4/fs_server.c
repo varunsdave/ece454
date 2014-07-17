@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "ece454_fs.h"
 #include "simplified_rpc/ece454rpc_types.h"
 
 #if 0
@@ -22,26 +21,30 @@ return_type r;
 
 extern printRegisteredProcedures();
 
-int fsMount(const char *srvIpOrDomName, const unsigned int srvPort, const char *localFolderName) {
-    struct stat sbuf;
+return_type fsMount(const int nparams, arg_type* a) {
+    //struct stat sbuf;
 
-    return(stat(localFolderName, &sbuf));
+    //return(stat(localFolderName, &sbuf));
+    return r;
 }
 
-int fsUnmount(const char *localFolderName) {
-    return 0;
+return_type fsUnmount(const int nparams, arg_type* a) {
+    //return 0;
+    return r;
 }
 
-FSDIR* fsOpenDir(const char *folderName) {
-    return(opendir(folderName));
+return_type fsOpenDir(const int nparams, arg_type* a) {
+    //return(opendir(folderName));
+    return r;
 }
 
-int fsCloseDir(FSDIR *folder) {
-    return(closedir(folder));
+return_type fsCloseDir(const int nparams, arg_type* a) {
+    //return(closedir(folder));
+    return r;
 }
 
-struct fsDirent *fsReadDir(FSDIR *folder) {
-    const int initErrno = errno;
+return_type fsReadDir(const int nparams, arg_type* a) {
+    /*const int initErrno = errno;
     struct dirent *d = readdir(folder);
 
     if(d == NULL) {
@@ -61,10 +64,12 @@ struct fsDirent *fsReadDir(FSDIR *folder) {
 
     memcpy(&(dent.entName), &(d->d_name), 256);
     return &dent;
+    */
+    return r;
 }
 
-int fsOpen(const char *fname, int mode) {
-    int flags = -1;
+return_type fsOpen(const int nparams, arg_type* a) {
+    /*int flags = -1;
 
     if(mode == 0) {
     flags = O_RDONLY;
@@ -73,57 +78,27 @@ int fsOpen(const char *fname, int mode) {
     flags = O_WRONLY | O_CREAT;
     }
 
-    return(open(fname, flags, S_IRWXU));
-}
-
-int fsClose(int fd) {
-    return(close(fd));
-}
-
-int fsRead(int fd, void *buf, const unsigned int count) {
-    return(read(fd, buf, (size_t)count));
-}
-
-int fsWrite(int fd, const void *buf, const unsigned int count) {
-    return(write(fd, buf, (size_t)count));
-}
-
-return_type fsRemove(const char *name) {
-    r.val = &(remove(name));
-    r.size = sizeof(int)
-
+    return(open(fname, flags, S_IRWXU));*/
     return r;
 }
 
-return_type concatStr(const int nparams, arg_type *a) {
-    /* Concatenates 5 strings and returns them.
-     * We assume a is 5 null-terminated strings. */
+return_type fsClose(const int nparams, arg_type* a) {
+    //return(close(fd));
+    return r;
+}
 
-    if(nparams != 5) {
-	r.return_val = NULL;
-	r.return_size = 0;
-	return r;
-    }
+return_type fsRead(const int nparams, arg_type* a) {
+    //return(read(fd, buf, (size_t)count));
+    return r;
+}
 
-    /* else */
-    char *s[5];
-    int i;
-    int totallen = 0;
+return_type fsWrite(const int nparams, arg_type* a) {
+    //return(write(fd, buf, (size_t)count));
+    return r;
+}
 
-    for(i = 0; i < 5; i++) {
-	s[i] = a->arg_val;
-	a = a->next;
-	totallen += strlen(s[i]);
-    }
-
-    r.return_val = (void *)calloc(totallen + 1, sizeof(char));
-    ((char *)(r.return_val))[totallen] = (char) 0;
-
-    for(i = totallen = 0; i < 5; totallen += strlen(s[i++])) {
-	memcpy(((char *)(r.return_val)) + totallen, s[i], strlen(s[i]));
-    }
-
-    r.return_size = strlen((char *)(r.return_val)) + 1;
+return_type fsRemove(const int nparams, arg_type* a) {
+    //return(remove(name));
     return r;
 }
 
