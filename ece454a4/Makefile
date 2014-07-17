@@ -21,4 +21,4 @@ $(OBJECTS2): simplified_rpc/%.o: simplified_rpc/%.c
 	gcc -c $< -o $@
 
 clean:
-	rm -rf *.o core *.a fs_client simplified_rpc/*.a simplified_rpc/*.o
+	rm -rf *.o core *.a fs_client simplified_rpc/*.a simplified_rpc/*.o server
