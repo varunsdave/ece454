@@ -19,6 +19,8 @@
 
 return_type r;
 
+char* folder_name;
+
 extern printRegisteredProcedures();
 
 return_type fsMount(const int nparams, arg_type* a) {
@@ -106,15 +108,24 @@ int main(int argc, char *argv[]) {
     if (argc < 2){
         printf("usage: %s <folder_name>\n", argv[0]);
         return 0;
-    } 
+    }
+
+    folder_name = argv[1];
 
     // Register all procedures
+    register_procedure("fsOpenDir", 1, fsOpenDir);
+    register_procedure("fsCloseDir", 1, fsCloseDir);
+    register_procedure("fsReadDir", 1, fsReadDir);
+    register_procedure("fsOpen", 2, fsOpen);
+    register_procedure("fsClose", 1, fsClose);
+    register_procedure("fsRead", 3, fsRead);
+    register_procedure("fsWrite", 3, fsWrite);
     register_procedure("fsRemove", 1, fsRemove);
 
 #ifdef _DEBUG_1_
     printRegisteredProcedures();
 #endif
 
-    launch_server(argv[1]);
+    launch_server();
     return 0;
 }

@@ -17,7 +17,7 @@ client-api.a: client_api.o ece454_fs.h
 $(OBJECTS): %.o: %.c ece454_fs.h
 	gcc -c $< -o $@
 
-$(OBJECTS2): simplified_rpc/%.o: simplified_rpc/%.c
+$(OBJECTS2): simplified_rpc/%.o: simplified_rpc/%.c simplified_rpc/ece454rpc_types.h
 	gcc -c $< -o $@
 
 clean:
