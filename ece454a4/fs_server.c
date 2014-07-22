@@ -72,7 +72,7 @@ int close_fsdir(FSDIR fsdir) {
 }
 
 return_type fsMount(const int nparams, arg_type* a) {
-    if (nparams != 1 ) {
+    if (nparams != 1) {
         // error
         r.return_val = NULL;
         r.return_size = 0;
@@ -222,6 +222,8 @@ int main(int argc, char *argv[]) {
     base_folder = argv[1];
 
     // Register all procedures
+    register_procedure("fsMount", 1, fsMount);
+    register_procedure("fsUnmount", 1, fsUnmount);
     register_procedure("fsOpenDir", 1, fsOpenDir);
     register_procedure("fsCloseDir", 1, fsCloseDir);
     register_procedure("fsReadDir", 1, fsReadDir);
