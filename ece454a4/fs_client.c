@@ -44,7 +44,8 @@ int main(int argc, char *argv[]) {
     if(fd == NULL) {
 	perror("fsOpenDir"); exit(1);
     }
-
+    printf ("successfully opened dir \n");
+    return 0;
     struct fsDirent *fdent = NULL;
     for(fdent = fsReadDir(fd); fdent != NULL; fdent = fsReadDir(fd)) {
 	printf("\t %s, %d\n", fdent->entName, (int)(fdent->entType));
