@@ -23,6 +23,8 @@ return_type r;
 
 char* base_folder;
 
+int fsdir_num_counter = 0;
+
 extern printRegisteredProcedures();
 
 struct fsdir_entry* fsdir_head = NULL;
@@ -53,7 +55,7 @@ DIR* get_dir_from_fsdir_num(int num) {
 
     struct fsdir_entry* fsdir_p = fsdir_head;
 
-    while (fsdir_p != NULL && fsdir_p) {
+    while (fsdir_p != NULL) {
         if (fsdir_p->fsdir.num == num) {
             d = fsdir_p->fsdir.dir;
             break;
@@ -124,7 +126,7 @@ return_type fsOpenDir(const int nparams, arg_type* a) {
     dir = opendir(full_path);
 
     FSDIR fsdir;
-    fsdir.num = 1;
+    fsdir.num = fsdir_num_counter++;
     fsdir.dir = dir;
 
     store_fsdir(fsdir);
@@ -146,9 +148,8 @@ return_type fsCloseDir(const int nparams, arg_type* a) {
     FSDIR fsdir;
     fsdir.num = *(int *)a->arg_val;
 
-    close_fsdir(fsdir);
+    int return_val = close_fsdir(fsdir);
 
-    int return_val = 0;
     r.return_val = &return_val;
     r.return_size = sizeof(return_val);
 
