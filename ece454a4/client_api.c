@@ -14,12 +14,21 @@
 
 struct fsDirent dent;
 
+char *serverIpOrDomainName;
+unsigned int serverPort;
+
+
 int fsMount(const char *srvIpOrDomName, const unsigned int srvPort, const char *localFolderName) {
+
     struct stat sbuf;
     int mountErrNo;
     stat(localFolderName, &sbuf);
     int dummyCheckSum = 1;
-    return_type ans = make_remote_call("127.0.0.1",10003, "fsMount", 1, sizeof(int), dummyCheckSum);
+
+    serverIpOrDomainName = srvIpOrDomName;
+    serverPort = srvPort;
+
+    return_type ans = make_remote_call(serverIpOrDomainName, serverPort, "fsMount", 1, sizeof(int), dummyCheckSum);
      
     int return_val = (*(int *)(ans.return_val));
     
@@ -41,7 +50,7 @@ int fsMount(const char *srvIpOrDomName, const unsigned int srvPort, const char *
 }
 
 int fsUnmount(const char *localFolderName) {
-    return_type ans = make_remote_call("127.0.0.1",10003, "fsUnmount", 1, strlen(localFolderName)+1, localFolderName);
+    return_type ans = make_remote_call(serverIpOrDomainName, serverPort, "fsUnmount", 1, strlen(localFolderName)+1, localFolderName);
      int return_val = (*(int *)(ans.return_val));
      if (return_val != -1){
         return return_val;}
@@ -54,7 +63,7 @@ int fsUnmount(const char *localFolderName) {
 }
 
 FSDIR* fsOpenDir(const char *folderName) {
-    // return_type ans = make_remote_call("127.0.0.1",10003,"fsOpen",1,strlen(folderName)+1, folderName);
+    // return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsOpen",1,strlen(folderName)+1, folderName);
      
      opendir(folderName);
     // int return_val = (*(int *)(ans.return_val));
@@ -109,7 +118,7 @@ int fsOpen(const char *fname, int mode) {
     
     // make rpc to open file structure and return the rpc value
 
-    return_type ans = make_remote_call("127.0.0.1",10003,"fsOpen",2,strlen(fname)+1,fname, sizeof(int),(void *)(&flags));
+    return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsOpen",2,strlen(fname)+1,fname, sizeof(int),(void *)(&flags));
     
     // return open file structure signatue
     int return_val =  (*(int *)(ans.return_val));
@@ -127,7 +136,7 @@ int fsOpen(const char *fname, int mode) {
 int fsClose(int fd) {
 
     close(fd); // close on client side;
-    return_type ans = make_remote_call("127.0.0.1",10003,"fsClose",1,sizeof(int),(void *)(& fd));
+    return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsClose",1,sizeof(int),(void *)(& fd));
 
     
     //return(close(fd));
@@ -147,7 +156,7 @@ int fsClose(int fd) {
 }
 
 int fsRead(int fd, void *buf, const unsigned int count) {
-    return_type ans = make_remote_call ("127.0.0.1",10003,"fsRead",3,sizeof(int),(void *)(&fd), count, &buf, sizeof(unsigned int), count);
+    return_type ans = make_remote_call (serverIpOrDomainName, serverPort,"fsRead",3,sizeof(int),(void *)(&fd), count, &buf, sizeof(unsigned int), count);
     int return_val = (*(int *) (ans.return_val));
 
   
@@ -165,7 +174,7 @@ int fsWrite(int fd, const void *buf, const unsigned int count) {
 
     // attempt to write to the server
 
-    return_type ans = make_remote_call ("127.0.0.1",10003,"fsWrite",3,sizeof(int),(void *)(&fd),(int) count, &buf, sizeof (unsigned int), count);
+    return_type ans = make_remote_call (serverIpOrDomainName, serverPort,"fsWrite",3,sizeof(int),(void *)(&fd),(int) count, &buf, sizeof (unsigned int), count);
     
 
     int return_val = (*(int *) ( ans.return_val));
@@ -183,7 +192,7 @@ int fsWrite(int fd, const void *buf, const unsigned int count) {
 
 int fsRemove(const char *name) {
 
-    return_type ans = make_remote_call("127.0.0.1",10003,"fsRemove",1,strlen(name)+1, name);
+    return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsRemove",1,strlen(name)+1, name);
 
    int return_val = (*(int *)(ans.return_val));
    
