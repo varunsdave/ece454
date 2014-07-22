@@ -18,9 +18,16 @@ int fsMount(const char *srvIpOrDomName, const unsigned int srvPort, const char *
     struct stat sbuf;
     int mountErrNo;
     stat(localFolderName, &sbuf);
+    int dummyCheckSum = 1;
+    return_type ans = make_remote_call("127.0.0.1",10003, "fsMount", 1, sizeof(int), dummyCheckSum);
+     
+    int return_val = (*(int *)(ans.return_val));
     
-
-    /*
+    if (return_val < 0){
+       errno = ENOTDIR;
+       return -1;
+    }
+    
     if(S_ISDIR(sbuf.st_mode)){
         return 0;
     }
@@ -29,7 +36,8 @@ int fsMount(const char *srvIpOrDomName, const unsigned int srvPort, const char *
 
         errno = ENOTDIR;
         return -1;
-    }*/
+    }
+
 }
 
 int fsUnmount(const char *localFolderName) {
@@ -177,7 +185,7 @@ int fsRemove(const char *name) {
 
     return_type ans = make_remote_call("127.0.0.1",10003,"fsRemove",1,strlen(name)+1, name);
 
-   int return_val = ans.return_val;
+   int return_val = (*(int *)(ans.return_val));
    
    int local_remove = remove(name);
 
