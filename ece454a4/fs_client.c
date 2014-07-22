@@ -36,6 +36,8 @@ int main(int argc, char *argv[]) {
 	exit(1);
     }
 
+    printf ("enter main fs_client \n");
+
     char *dirname = argv[3];
     printf("fsMount(): %d\n", fsMount(argv[1], atoi(argv[2]), dirname));
     FSDIR *fd = fsOpenDir(dirname);

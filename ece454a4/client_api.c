@@ -14,24 +14,30 @@
 
 struct fsDirent dent;
 
-char *serverIpOrDomainName;
+const char *serverIpOrDomainName;
 unsigned int serverPort;
+const char *localFolder;
+
 
 
 int fsMount(const char *srvIpOrDomName, const unsigned int srvPort, const char *localFolderName) {
 
     struct stat sbuf;
     int mountErrNo;
-    stat(localFolderName, &sbuf);
-    int dummyCheckSum = 1;
 
     serverIpOrDomainName = srvIpOrDomName;
     serverPort = srvPort;
-
-    return_type ans = make_remote_call(serverIpOrDomainName, serverPort, "fsMount", 1, sizeof(int), dummyCheckSum);
-     
-    int return_val = (*(int *)(ans.return_val));
+    localFolder = localFolderName;    
     
+    stat(localFolderName, &sbuf);
+    int  dummyCheckSum = 1;
+    printf("enter fsMount right before rpc call \n");
+
+    return_type ans = make_remote_call(serverIpOrDomainName,serverPort, "fsMount", 1, sizeof(int), (void *)(&dummyCheckSum));
+    
+    printf("fsMount right after rpc call \n"); 
+    int return_val = (*(int *)(ans.return_val));
+    printf ("return value generated \n");    
     if (return_val < 0){
        errno = ENOTDIR;
        return -1;
