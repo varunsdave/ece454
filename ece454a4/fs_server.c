@@ -100,7 +100,8 @@ return_type fsUnmount(const int nparams, arg_type* a) {
         return r;
     }
 
-    r.return_val = 0;
+    int return_val = 0;
+    r.return_val = &return_val;
     r.return_size = sizeof(int);
 
     return r;
