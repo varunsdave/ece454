@@ -36,23 +36,14 @@ int fsMount(const char *srvIpOrDomName, const unsigned int srvPort, const char *
     return_type ans = make_remote_call(serverIpOrDomainName,serverPort, "fsMount", 1, sizeof(int), (void *)(&dummyCheckSum));
     
     printf("fsMount right after rpc call \n"); 
-    int return_val = (*(int *)(ans.return_val));
+    int return_val = *(int *)(ans.return_val);
     printf ("return value generated \n");    
     if (return_val < 0){
        errno = ENOTDIR;
        return -1;
     }
-    
-    if(S_ISDIR(sbuf.st_mode)){
-        return 0;
-    }
-    else{
-        mountErrNo = -1;
-
-        errno = ENOTDIR;
-        return -1;
-    }
-
+    printf ("return value was correct \n"); 
+    return 0;
 }
 
 int fsUnmount(const char *localFolderName) {
@@ -69,9 +60,31 @@ int fsUnmount(const char *localFolderName) {
 }
 
 FSDIR* fsOpenDir(const char *folderName) {
-    // return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsOpen",1,strlen(folderName)+1, folderName);
+     return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsOpen",1,strlen(folderName)+1, folderName);
      
-     opendir(folderName);
+     printf("returnOpenDir value from server.. need to be parsed \n");
+    
+     //int return_val = (*(int *)(ans.return_val));
+     int return_val = 1;
+     printf("returnValue is correct in OpenDir \n");
+     FSDIR dirFolder;
+     FSDIR *ptrDirFolder;
+
+     ptrDirFolder = &dirFolder;
+
+     printf("FSDIR dirFolder variable Created \n");
+     ptrDirFolder->num = return_val;
+     ptrDirFolder->dir = NULL; 
+     if (return_val == 0){
+              return NULL;}
+
+     else {
+        printf("returning ptr to dir Folder \n"); 
+        return ptrDirFolder;
+     } 
+     
+     //return NULL;
+     //opendir(folderName);
     // int return_val = (*(int *)(ans.return_val));
     // if (return_val !=-1){
         //return (int)return_val;
@@ -85,13 +98,14 @@ FSDIR* fsOpenDir(const char *folderName) {
 
 int fsCloseDir(FSDIR *folder) {
     
-    return(closedir(folder));
+    //return(closedir(folder));
+    return 0;
 }
 
 
 struct fsDirent *fsReadDir(FSDIR *folder) {
     const int initErrno = errno;
-    struct dirent *d = readdir(folder);
+    struct dirent *d = readdir(folder->dir);
 
     if(d == NULL) {
 	if(errno == initErrno) errno = 0;
