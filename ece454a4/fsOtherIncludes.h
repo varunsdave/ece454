@@ -10,6 +10,9 @@
 #include <sys/types.h>
 #include <dirent.h>
 
-typedef DIR FSDIR;
+typedef struct {
+    int num;
+    DIR* dir;
+} FSDIR;
 
 #endif
