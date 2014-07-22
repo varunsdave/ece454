@@ -6,7 +6,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <dirent.h>
 #include "simplified_rpc/ece454rpc_types.h"
+#include "fsOtherIncludes.h"
 
 #if 0
 #define _DEBUG_1_
@@ -19,29 +21,136 @@
 
 return_type r;
 
-char* folder_name;
+char* base_folder;
 
 extern printRegisteredProcedures();
 
-return_type fsMount(const int nparams, arg_type* a) {
-    //struct stat sbuf;
+struct fsdir_entry* fsdir_head = NULL;
+struct fsdir_entry* fsdir_tail = NULL;
 
-    //return(stat(localFolderName, &sbuf));
+/* Linked list of fsdirs opened by clients*/
+struct fsdir_entry {
+    FSDIR fsdir;
+    struct fsdir_entry *next;
+};
+
+void store_fsdir(FSDIR fsdir) {
+    struct fsdir_entry* new_fsdir_entry;
+    new_fsdir_entry->fsdir = fsdir;
+
+    if (fsdir_head == NULL) {
+        fsdir_head = new_fsdir_entry;
+        fsdir_tail = new_fsdir_entry;
+    }
+    else {
+        fsdir_tail->next = new_fsdir_entry;
+        fsdir_tail = new_fsdir_entry;
+    }
+}
+
+DIR* get_dir_from_fsdir_num(int num) {
+    DIR* d = NULL;
+
+    struct fsdir_entry* fsdir_p = fsdir_head;
+
+    while (fsdir_p != NULL && fsdir_p) {
+        if (fsdir_p->fsdir.num == num) {
+            d = fsdir_p->fsdir.dir;
+            break;
+        }
+
+        fsdir_p = fsdir_p->next;
+    }
+
+    return d;
+}
+
+int close_fsdir(FSDIR fsdir) {
+    DIR* d = get_dir_from_fsdir_num(fsdir.num);
+
+    return closedir(d);
+}
+
+return_type fsMount(const int nparams, arg_type* a) {
+    if (nparams != 1 ) {
+        // error
+        r.return_val = NULL;
+        r.return_size = 0;
+        return r;
+    }
+
+    if (a->arg_size != sizeof(int)) {
+        // error
+        r.return_val = NULL;
+        r.return_size = 0;
+        return r;
+    }
+
+    r.return_val = a->arg_val;
+    r.return_size = sizeof(int);
+
     return r;
 }
 
 return_type fsUnmount(const int nparams, arg_type* a) {
-    //return 0;
+    if (nparams != 0) {
+        // error
+        r.return_val = NULL;
+        r.return_size = 0;
+        return r;
+    }
+
+    r.return_val = 0;
+    r.return_size = sizeof(int);
+
     return r;
 }
 
 return_type fsOpenDir(const int nparams, arg_type* a) {
-    //return(opendir(folderName));
+    if (nparams != 1) {
+        // error
+        r.return_val = NULL;
+        r.return_size = 0;
+        return r;
+    }
+
+    char* folder = (char *)a->arg_val;
+
+    char* full_path = base_folder;
+    strcat(full_path, folder);
+
+    DIR *dir;
+    dir = opendir(full_path);
+
+    FSDIR fsdir;
+    fsdir.num = 1;
+    fsdir.dir = dir;
+
+    store_fsdir(fsdir);
+
+    r.return_val = (void *)(&(fsdir.num));
+    r.return_size = sizeof(int);
+
     return r;
 }
 
 return_type fsCloseDir(const int nparams, arg_type* a) {
-    //return(closedir(folder));
+    if (nparams != 1) {
+        // error
+        r.return_val = NULL;
+        r.return_size = 0;
+        return r;
+    }
+
+    FSDIR fsdir;
+    fsdir.num = *(int *)a->arg_val;
+
+    close_fsdir(fsdir);
+
+    int return_val = 0;
+    r.return_val = &return_val;
+    r.return_size = sizeof(return_val);
+
     return r;
 }
 
@@ -110,7 +219,7 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    folder_name = argv[1];
+    base_folder = argv[1];
 
     // Register all procedures
     register_procedure("fsOpenDir", 1, fsOpenDir);
