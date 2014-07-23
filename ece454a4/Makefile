@@ -14,6 +14,9 @@ libstubs.a: simplified_rpc/server_stub.o simplified_rpc/client_stub.o simplified
 client-api.a: client_api.o ece454_fs.h
 	ar r client-api.a client_api.o
 
+simplified_rpc/server_stub.o: simplified_rpc/server_stub.c
+	gcc -c -g simplified_rpc/server_stub.c -o simplified_rpc/server_stub.o
+
 $(OBJECTS): %.o: %.c ece454_fs.h
 	gcc -c -g $< -o $@
 
