@@ -196,22 +196,67 @@ return_type fsOpen(const int nparams, arg_type* a) {
 }
 
 return_type fsClose(const int nparams, arg_type* a) {
-    //return(close(fd));
+    if (nparams != 1) {
+        // error
+        r.return_val = NULL;
+        r.return_size = 0;
+        return r;
+    }
+
+    int fd = *(int *)a->arg_val;
+
+    int return_val = close(fd);
+
+    r.return_val = &return_val;
+    r.return_size = sizeof(return_val);
+
     return r;
 }
 
 return_type fsRead(const int nparams, arg_type* a) {
+    if (nparams != 3) {
+        // error
+        r.return_val = NULL;
+        r.return_size = 0;
+        return r;
+    }
+
+    int fd = *(int *)a->arg_val;
     //return(read(fd, buf, (size_t)count));
     return r;
 }
 
 return_type fsWrite(const int nparams, arg_type* a) {
-    //return(write(fd, buf, (size_t)count));
+    if (nparams != 3) {
+        // error
+        r.return_val = NULL;
+        r.return_size = 0;
+        return r;
+    }
+
+    //int fd = *(int *)a->arg_val;
+    //write(fd, buf, (size_t)count);
+
     return r;
 }
 
 return_type fsRemove(const int nparams, arg_type* a) {
-    //return(remove(name));
+    if (nparams != 1) {
+        // error
+        r.return_val = NULL;
+        r.return_size = 0;
+        return r;
+    }
+
+    char* file_name = (char *)a->arg_val;
+    char* full_path = base_folder;
+    strcat(full_path, file_name);
+
+    int return_val = remove(full_path);
+
+    r.return_val = return_val;
+    r.return_size = sizeof(return_val);
+
     return r;
 }
 
