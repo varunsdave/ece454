@@ -23,6 +23,8 @@ return_type r;
 
 char* base_folder;
 
+int fsdir_num_counter = 0;
+
 extern printRegisteredProcedures();
 
 struct fsdir_entry* fsdir_head = NULL;
@@ -53,7 +55,7 @@ DIR* get_dir_from_fsdir_num(int num) {
 
     struct fsdir_entry* fsdir_p = fsdir_head;
 
-    while (fsdir_p != NULL && fsdir_p) {
+    while (fsdir_p != NULL) {
         if (fsdir_p->fsdir.num == num) {
             d = fsdir_p->fsdir.dir;
             break;
@@ -100,7 +102,8 @@ return_type fsUnmount(const int nparams, arg_type* a) {
         return r;
     }
 
-    r.return_val = 0;
+    int return_val = 0;
+    r.return_val = &return_val;
     r.return_size = sizeof(int);
 
     return r;
@@ -123,7 +126,7 @@ return_type fsOpenDir(const int nparams, arg_type* a) {
     dir = opendir(full_path);
 
     FSDIR fsdir;
-    fsdir.num = 1;
+    fsdir.num = fsdir_num_counter++;
     fsdir.dir = dir;
 
     store_fsdir(fsdir);
@@ -145,9 +148,8 @@ return_type fsCloseDir(const int nparams, arg_type* a) {
     FSDIR fsdir;
     fsdir.num = *(int *)a->arg_val;
 
-    close_fsdir(fsdir);
+    int return_val = close_fsdir(fsdir);
 
-    int return_val = 0;
     r.return_val = &return_val;
     r.return_size = sizeof(return_val);
 
@@ -194,22 +196,67 @@ return_type fsOpen(const int nparams, arg_type* a) {
 }
 
 return_type fsClose(const int nparams, arg_type* a) {
-    //return(close(fd));
+    if (nparams != 1) {
+        // error
+        r.return_val = NULL;
+        r.return_size = 0;
+        return r;
+    }
+
+    int fd = *(int *)a->arg_val;
+
+    int return_val = close(fd);
+
+    r.return_val = &return_val;
+    r.return_size = sizeof(return_val);
+
     return r;
 }
 
 return_type fsRead(const int nparams, arg_type* a) {
+    if (nparams != 3) {
+        // error
+        r.return_val = NULL;
+        r.return_size = 0;
+        return r;
+    }
+
+    int fd = *(int *)a->arg_val;
     //return(read(fd, buf, (size_t)count));
     return r;
 }
 
 return_type fsWrite(const int nparams, arg_type* a) {
-    //return(write(fd, buf, (size_t)count));
+    if (nparams != 3) {
+        // error
+        r.return_val = NULL;
+        r.return_size = 0;
+        return r;
+    }
+
+    //int fd = *(int *)a->arg_val;
+    //write(fd, buf, (size_t)count);
+
     return r;
 }
 
 return_type fsRemove(const int nparams, arg_type* a) {
-    //return(remove(name));
+    if (nparams != 1) {
+        // error
+        r.return_val = NULL;
+        r.return_size = 0;
+        return r;
+    }
+
+    char* file_name = (char *)a->arg_val;
+    char* full_path = base_folder;
+    strcat(full_path, file_name);
+
+    int return_val = remove(full_path);
+
+    r.return_val = return_val;
+    r.return_size = sizeof(return_val);
+
     return r;
 }
 
