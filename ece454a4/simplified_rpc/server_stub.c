@@ -18,9 +18,9 @@
 #include <signal.h>
 #include "ece454rpc_types.h"
 
-#if 0
+//#if 0
 #define _DEBUG_1_
-#endif
+//#endif
 
 extern uint32_t getPublicIPAddr();
 extern void recvbytes(int, void *, ssize_t);
@@ -136,6 +136,9 @@ void recvCall(int s, char **pfname, int *pnparams, arg_type **pa) {
 }
 
 void makeCall(char *fname, int nparams, arg_type *a, return_type *r) {
+
+    printf("--------FNAME %s ---------\n", fname);
+
     if(r == NULL) {
 	fprintf(stderr, "makeCall() -- null r!\n");
 	exit(1);
@@ -190,6 +193,11 @@ void returnResult(int s, return_type *ret) {
 #endif
 
     if(ret == NULL || ret->return_size <= 0) {
+    if (ret == NULL) {
+        printf("ret null\n");
+    } else {
+        printf("sizeeee\n");
+    }
 	int i = 0;
 	sendbytes(s, &i, sizeof(int));
 	return;
@@ -261,6 +269,8 @@ void launch_server() {
 	return_type ret;
 
 	recvCall(asock, &fname, &nparams, &a);
+
+    printf("--------FNAME %s ---------\n", fname);
 
 #ifdef _DEBUG_1_
 	printf("launch_server(), before makeCall()\n"); fflush(stdout);
