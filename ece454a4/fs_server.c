@@ -38,6 +38,8 @@ struct fsdir_entry {
 
 void store_fsdir(FSDIR *fsdir) {
     struct fsdir_entry* new_fsdir_entry;
+    new_fsdir_entry = malloc(sizeof(struct fsdir_entry));
+
     new_fsdir_entry->fsdir = fsdir;
 
     if (fsdir_head == NULL) {
@@ -140,9 +142,9 @@ return_type fsOpenDir(const int nparams, arg_type* a) {
     printf("initialized fsDir values now about to enter storeFsDir\n");
     store_fsdir(fsdir);
     printf("stored fsDir succeffully \n");
-   // r.return_val = (void *)(&(fsdir->num));
-    r.return_val = NULL;
-    r.return_size = 0;
+    r.return_val = (void *)(&(fsdir->num));
+    r.return_size = sizeof(int);
+
     printf ("returning fsOpenDir\n");
     return r;
 }
