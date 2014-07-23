@@ -18,9 +18,9 @@
 #include <signal.h>
 #include "ece454rpc_types.h"
 
-//#if 0
+#if 0
 #define _DEBUG_1_
-//#endif
+#endif
 
 extern uint32_t getPublicIPAddr();
 extern void recvbytes(int, void *, ssize_t);
@@ -87,7 +87,6 @@ void recvCall(int s, char **pfname, int *pnparams, arg_type **pa) {
     }
 
     *pfname = (char *)calloc(fnamelen + 1, sizeof(char));
-    memset(*pfname, 0, fnamelen+1);
     recvbytes(s, (void *)(*pfname), fnamelen);
 
 #ifdef _DEBUG_1_
@@ -104,26 +103,20 @@ void recvCall(int s, char **pfname, int *pnparams, arg_type **pa) {
 	fprintf(stderr, "*pnparams = %d\n!", *pnparams);
 	exit(1);
     }
-    
-    char funcName[fnamelen];
-    strncpy(funcName,*pfname,fnamelen);
-    funcName[fnamelen] = '\0'; 
+
     int i;
     for(i = 0; i < *pnparams; i++) {
-        printf("recvCall(), 1  %s \n",*pfname);
-        arg_type *newarg = (arg_type *)malloc(sizeof(arg_type));
+	arg_type *newarg = (arg_type *)malloc(sizeof(arg_type));
 	recvbytes(s, (void *)(&(newarg->arg_size)), sizeof(int));
 	if((newarg->arg_size) <= 0) {
 	    fprintf(stderr, "newarg[%d]->arg_size = %d\n!",
 		    i, newarg->arg_size);
 	    exit(1);
 	}
-        printf("recvCall(), 2  %s   %s \n",*pfname,funcName);
 
-	newarg->arg_val = (void *)malloc(newarg->arg_size);
+	newarg->arg_val = malloc(newarg->arg_size);
 	recvbytes(s, (void *)(newarg->arg_val), newarg->arg_size);
 
-        printf("recvCall(), 3  %s   %s  \n",*pfname, funcName);
 	newarg->next = NULL;
 	if(i == 0) {
 	    *pa = newarg;
@@ -135,17 +128,13 @@ void recvCall(int s, char **pfname, int *pnparams, arg_type **pa) {
 	    tmp->next = newarg;
 	}
     }
-   // *pfname = funcName;
-    strncpy(*pfname,funcName,fnamelen);
+
     if(*pnparams <= 0) {
 	*pa = NULL;
     }
 }
 
 void makeCall(char *fname, int nparams, arg_type *a, return_type *r) {
-
-    printf("--------FNAME %s ---------\n", fname);
-
     if(r == NULL) {
 	fprintf(stderr, "makeCall() -- null r!\n");
 	exit(1);
@@ -200,11 +189,6 @@ void returnResult(int s, return_type *ret) {
 #endif
 
     if(ret == NULL || ret->return_size <= 0) {
-    if (ret == NULL) {
-        printf("ret null\n");
-    } else {
-        printf("sizeeee\n");
-    }
 	int i = 0;
 	sendbytes(s, &i, sizeof(int));
 	return;
@@ -277,8 +261,6 @@ void launch_server() {
 
 	recvCall(asock, &fname, &nparams, &a);
 
-    printf("--------FNAME %s ---------\n", fname);
-
 #ifdef _DEBUG_1_
 	printf("launch_server(), before makeCall()\n"); fflush(stdout);
 #endif
@@ -290,7 +272,7 @@ void launch_server() {
 #endif
 
 	returnResult(asock, &ret);
-        printf("\n\n\n\n\n");
+
 	free(fname);
 	freeArgs(a);
 	freeRet(ret);

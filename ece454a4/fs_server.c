@@ -74,7 +74,6 @@ int close_fsdir(FSDIR fsdir) {
 }
 
 return_type fsMount(const int nparams, arg_type* a) {
-    printf("entered\n"); fflush(stdout);
     if (nparams != 1) {
         printf("np\n"); fflush(stdout);
         // error
@@ -91,9 +90,11 @@ return_type fsMount(const int nparams, arg_type* a) {
         return r;
     }
 
-    printf("%i\n", *(int *)a->arg_val);
+    int* ret_val = malloc(sizeof(int));
 
-    r.return_val = a->arg_val;
+    memcpy(ret_val, a->arg_val, sizeof(int));
+
+    r.return_val = ret_val;
     r.return_size = sizeof(int);
 
     return r;
