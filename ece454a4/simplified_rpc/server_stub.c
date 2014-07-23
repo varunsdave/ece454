@@ -104,20 +104,26 @@ void recvCall(int s, char **pfname, int *pnparams, arg_type **pa) {
 	fprintf(stderr, "*pnparams = %d\n!", *pnparams);
 	exit(1);
     }
-
+    
+    char funcName[fnamelen];
+    strncpy(funcName,*pfname,fnamelen);
+    funcName[fnamelen] = '\0'; 
     int i;
     for(i = 0; i < *pnparams; i++) {
-	arg_type *newarg = (arg_type *)malloc(sizeof(arg_type));
+        printf("recvCall(), 1  %s \n",*pfname);
+        arg_type *newarg = (arg_type *)malloc(sizeof(arg_type));
 	recvbytes(s, (void *)(&(newarg->arg_size)), sizeof(int));
 	if((newarg->arg_size) <= 0) {
 	    fprintf(stderr, "newarg[%d]->arg_size = %d\n!",
 		    i, newarg->arg_size);
 	    exit(1);
 	}
+        printf("recvCall(), 2  %s   %s \n",*pfname,funcName);
 
 	newarg->arg_val = (void *)malloc(newarg->arg_size);
 	recvbytes(s, (void *)(newarg->arg_val), newarg->arg_size);
 
+        printf("recvCall(), 3  %s   %s  \n",*pfname, funcName);
 	newarg->next = NULL;
 	if(i == 0) {
 	    *pa = newarg;
@@ -129,7 +135,8 @@ void recvCall(int s, char **pfname, int *pnparams, arg_type **pa) {
 	    tmp->next = newarg;
 	}
     }
-
+   // *pfname = funcName;
+    strncpy(*pfname,funcName,fnamelen);
     if(*pnparams <= 0) {
 	*pa = NULL;
     }
@@ -283,7 +290,7 @@ void launch_server() {
 #endif
 
 	returnResult(asock, &ret);
-
+        printf("\n\n\n\n\n");
 	free(fname);
 	freeArgs(a);
 	freeRet(ret);
