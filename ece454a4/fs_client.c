@@ -40,7 +40,9 @@ int main(int argc, char *argv[]) {
 
     char *dirname = argv[3];
     printf("fsMount(): %d\n", fsMount(argv[1], atoi(argv[2]), dirname));
+    return 0;
     FSDIR *fd = fsOpenDir(dirname);
+    
     if(fd == NULL) {
 	perror("fsOpenDir"); exit(1);
     }
