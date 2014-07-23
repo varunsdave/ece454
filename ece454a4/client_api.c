@@ -47,7 +47,10 @@ int fsMount(const char *srvIpOrDomName, const unsigned int srvPort, const char *
 }
 
 int fsUnmount(const char *localFolderName) {
-    return_type ans = make_remote_call(serverIpOrDomainName, serverPort, "fsUnmount", 1, strlen(localFolderName)+1, localFolderName);
+    
+    //int dummyCheckSum = 1;
+    
+     return_type ans = make_remote_call(serverIpOrDomainName, serverPort, "fsUnmount", 1, strlen(localFolderName)+1, localFolderName);
      int return_val = (*(int *)(ans.return_val));
      if (return_val != -1){
         return return_val;}
@@ -60,7 +63,7 @@ int fsUnmount(const char *localFolderName) {
 }
 
 FSDIR* fsOpenDir(const char *folderName) {
-     return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsOpen",1,strlen(folderName)+1, folderName);
+     return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsOpenDir",1,strlen(folderName)+1, folderName);
      
      printf("returnOpenDir value from server.. need to be parsed \n");
     
@@ -98,6 +101,9 @@ FSDIR* fsOpenDir(const char *folderName) {
 
 int fsCloseDir(FSDIR *folder) {
     
+    int retur_val;
+
+    // return_type ans = make_remote_call(serverIpOrDomainName, serverPort, "fsCloseDir",1,sizeof(int),(void *)(&folder));
     //return(closedir(folder));
     return 0;
 }

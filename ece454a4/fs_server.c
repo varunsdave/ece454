@@ -32,11 +32,11 @@ struct fsdir_entry* fsdir_tail = NULL;
 
 /* Linked list of fsdirs opened by clients*/
 struct fsdir_entry {
-    FSDIR fsdir;
+    FSDIR* fsdir;
     struct fsdir_entry *next;
 };
 
-void store_fsdir(FSDIR fsdir) {
+void store_fsdir(FSDIR *fsdir) {
     struct fsdir_entry* new_fsdir_entry;
     new_fsdir_entry->fsdir = fsdir;
 
@@ -56,8 +56,8 @@ DIR* get_dir_from_fsdir_num(int num) {
     struct fsdir_entry* fsdir_p = fsdir_head;
 
     while (fsdir_p != NULL) {
-        if (fsdir_p->fsdir.num == num) {
-            d = fsdir_p->fsdir.dir;
+        if (fsdir_p->fsdir->num == num) {
+            d = fsdir_p->fsdir->dir;
             break;
         }
 
@@ -124,16 +124,20 @@ return_type fsOpenDir(const int nparams, arg_type* a) {
 
     DIR *dir;
     dir = opendir(full_path);
-
-    FSDIR fsdir;
-    fsdir.num = fsdir_num_counter++;
-    fsdir.dir = dir;
-
+    printf("entered fsOpenFDir on server\n");
+    FSDIR *fsdir;
+    fsdir = malloc(sizeof(FSDIR));
+    printf("succefful malloc for fsdir \n");
+    fsdir->num = fsdir_num_counter+1;
+    //fsdir -> num = 1;
+    fsdir->dir = dir;
+    printf("initialized fsDir values now about to enter storeFsDir\n");
     store_fsdir(fsdir);
-
-    r.return_val = (void *)(&(fsdir.num));
-    r.return_size = sizeof(int);
-
+    printf("stored fsDir succeffully \n");
+   // r.return_val = (void *)(&(fsdir->num));
+    r.return_val = NULL;
+    r.return_size = 0;
+    printf ("returning fsOpenDir\n");
     return r;
 }
 

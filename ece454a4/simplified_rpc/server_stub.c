@@ -234,52 +234,52 @@ void launch_server() {
     a.sin_family = AF_INET;
     a.sin_port = 0;
     if((a.sin_addr.s_addr = getPublicIPAddr()) == 0) {
-        fprintf(stderr, "Could not get public ip address. Exiting...\n");
-        exit(0);
+	fprintf(stderr, "Could not get public ip address. Exiting...\n");
+	exit(0);
     }
 
     if(mybind(s, &a) < 0) {
-        fprintf(stderr, "mybind() failed. Exiting...\n");
-        exit(0);
+	fprintf(stderr, "mybind() failed. Exiting...\n");
+	exit(0);
     }
 
     printf("%s %u\n", inet_ntoa(a.sin_addr), ntohs(a.sin_port));
     
     if(listen(s, 0) < 0) {
-        perror("listen"); exit(0);
+	perror("listen"); exit(0);
     }
 
     memset(&a, 0, sizeof(struct sockaddr_in));
     socklen_t alen = sizeof(struct sockaddr_in);
     int asock = -1;
     while((asock = accept(s, (struct sockaddr *)&a, &alen)) > 0) {
-        /* Single-threaded */
+	/* Single-threaded */
 
-        char *fname;
-        int nparams;
-        arg_type *a = NULL;
-        return_type ret;
+	char *fname;
+	int nparams;
+	arg_type *a = NULL;
+	return_type ret;
 
-        recvCall(asock, &fname, &nparams, &a);
-
-#ifdef _DEBUG_1_
-        printf("launch_server(), before makeCall()\n"); fflush(stdout);
-#endif
-
-        makeCall(fname, nparams, a, &ret);
+	recvCall(asock, &fname, &nparams, &a);
 
 #ifdef _DEBUG_1_
-        printf("launch_server(), after makeCall()\n"); fflush(stdout);
+	printf("launch_server(), before makeCall()\n"); fflush(stdout);
 #endif
 
-        returnResult(asock, &ret);
+	makeCall(fname, nparams, a, &ret);
 
-        //free(fname);
-        //freeArgs(a);
-        //freeRet(ret);
+#ifdef _DEBUG_1_
+	printf("launch_server(), after makeCall()\n"); fflush(stdout);
+#endif
 
-        shutdown(asock, SHUT_RDWR); close(asock);
-        asock = -1;
+	returnResult(asock, &ret);
+
+	free(fname);
+	freeArgs(a);
+	freeRet(ret);
+
+	shutdown(asock, SHUT_RDWR); close(asock);
+	asock = -1;
     }
 
     /* WARNING -- massive memory, linked list of registered
