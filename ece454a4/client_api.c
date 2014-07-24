@@ -86,17 +86,6 @@ FSDIR* fsOpenDir(const char *folderName) {
         return ptrDirFolder;
      } 
      
-     //return NULL;
-     //opendir(folderName);
-    // int return_val = (*(int *)(ans.return_val));
-    // if (return_val !=-1){
-        //return (int)return_val;
-     ///}
- //    else {
-  //      errno = ENOTDIR;
-  //      return -1;
-   //  }
-     //opendir(folderName);
 }
 
 int fsCloseDir(FSDIR *folder) {
@@ -119,9 +108,28 @@ int fsCloseDir(FSDIR *folder) {
 
 
 struct fsDirent *fsReadDir(FSDIR *folder) {
-    const int initErrno = errno;
-    struct dirent *d = readdir(folder->dir);
+    printf("fsReadDir(), entering function \n");
+    struct dirent *dent;
+    int fsDirPtrNum = folder->num;
+    return_type ans = make_remote_call(serverIpOrDomainName, serverPort, "fsReadDir",1, sizeof(int), (void *)(&fsDirPtrNum));
+    
+    struct fsDirent *return_val;
+    return_val  = (struct fsDirent *)(ans.return_val);
+    
+    if (return_val == NULL ){
+        printf("fsReadDir(), error or end of folder found\n");
+    }
+    else{
+         printf("fsReadDir(), return fine \n");
+    }
+    
+ 
 
+    printf("fsReadDir(), exiting function\n");
+    return &dent;
+    /* const int initErrno = errno;
+    struct dirent *d = readdir(folder->dir);
+   
     if(d == NULL) {
 	if(errno == initErrno) errno = 0;
 	return NULL;
@@ -138,7 +146,7 @@ struct fsDirent *fsReadDir(FSDIR *folder) {
     }
 
     memcpy(&(dent.entName), &(d->d_name), 256);
-    return &dent;
+    return &dent;*/
 }
 
 int fsOpen(const char *fname, int mode) {
