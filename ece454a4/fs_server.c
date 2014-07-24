@@ -61,19 +61,19 @@ void store_fsdir(FSDIR *fsdir) {
         fsdir_tail->next = new_fsdir_entry;
         fsdir_tail = new_fsdir_entry;
     }
-    printf("fsDir num value stored as: %i\n", fsdir_tail->fsdir->num);
-    printf("fsDir head num value stored as: %i\n", fsdir_head->fsdir->num);
+    //printf("fsDir num value stored as: %i\n", fsdir_tail->fsdir->num);
+    //printf("fsDir head num value stored as: %i\n", fsdir_head->fsdir->num);
 }
 
 DIR* get_dir_from_fsdir_num(int num) {
     DIR* d = NULL;
     
-    printf("fsCloseDir(), fsDir head num value stored as: %i\n", fsdir_head->fsdir->num);
+    //printf("get_dir_from_fsdir_num(), fsDir head num value stored as: %i\n", fsdir_head->fsdir->num);
     struct fsdir_entry* fsdir_p = fsdir_head;
  
     while (fsdir_p != NULL) {
         FSDIR* temp = fsdir_p->fsdir;
-        printf("temp poitner created and the num is: %i \n", temp->num);
+        //printf("temp poitner created and the num is: %i \n", temp->num);
         if (fsdir_p->fsdir->num == num) {
             d = fsdir_p->fsdir->dir;
             printf("found the D \n");
@@ -150,23 +150,19 @@ return_type fsOpenDir(const int nparams, arg_type* a) {
     DIR *dir;
     printf("fsOpenDir(), the full path is: %s\n", full_path);
     dir = opendir(full_path);
-    printf("entered fsOpenFDir on server\n");
     FSDIR *fsdir;
     fsdir = malloc(sizeof(FSDIR));
-    printf("succefful malloc for fsdir \n");
-    fsdir->num = fsdir_num_counter+1;
-    //fsdir -> num = 1;
+    fsdir_num_counter += 1;
+    fsdir->num = fsdir_num_counter;
+    printf("fsdir num assigned to %i\n", fsdir->num);
     fsdir->dir = dir;
-    printf("initialized fsDir values now about to enter storeFsDir\n");
     store_fsdir(fsdir);
     
-    printf("stored fsDir succeffully \n");
     int* fsdirNumVal = malloc(sizeof(int));
     *fsdirNumVal = fsdir->num;
     r.return_val = fsdirNumVal;
     r.return_size = sizeof(int);
 
-    printf ("returning fsOpenDir\n");
     return r;
 }
 
@@ -231,11 +227,13 @@ return_type fsReadDir(const int nparams, arg_type* a) {
 
     r.return_val = dent;
     r.return_size = sizeof(dent);
+    printf("exiting fsReadDir \n");
 
     return r;
 }
 
 return_type fsOpen(const int nparams, arg_type* a) {
+    printf("entered open \n");
     if (nparams != 2) {
         // error
         r.return_val = NULL;
@@ -259,6 +257,7 @@ return_type fsOpen(const int nparams, arg_type* a) {
         flags = O_WRONLY | O_CREAT;
     }
 
+    printf("opening :%s \n", full_path);
     int* return_val = malloc(sizeof(int));
     *return_val = open(full_path, flags, S_IRWXU);
 
