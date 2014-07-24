@@ -304,6 +304,7 @@ return_type fsRemove(const int nparams, arg_type* a) {
 
     char* file_name = (char *)a->arg_val;
     char* full_path = base_folder;
+    strcat(full_path, "/");
     strcat(full_path, file_name);
 
     int* return_val = malloc(sizeof(int));
