@@ -19,6 +19,12 @@
  * the server_stub to deallocate after it returns the
  * response to the client. */
 
+struct fsDirent {
+    char entName[256];
+    unsigned char entType; /* 0 for file, 1 for folder,
+                  -1 otherwise. */
+};
+
 return_type r;
 
 char* base_folder;
@@ -171,27 +177,45 @@ return_type fsCloseDir(const int nparams, arg_type* a) {
 }
 
 return_type fsReadDir(const int nparams, arg_type* a) {
-    /*const int initErrno = errno;
-    struct dirent *d = readdir(folder);
+    if (nparams != 1) {
+        // error
+        r.return_val = NULL;
+        r.return_size = 0;
+        return r;
+    }
+
+    FSDIR fsdir;
+    fsdir.num = *(int *)a->arg_val;
+
+    DIR* dir = get_dir_from_fsdir_num(fsdir.num);
+
+    struct fsDirent* dent = malloc(sizeof(struct fsDirent));
+
+    //const int initErrno = errno;
+    struct dirent *d = readdir(dir);
 
     if(d == NULL) {
-    if(errno == initErrno) errno = 0;
-    return NULL;
+        //if(errno == initErrno) errno = 0;
+        r.return_val = NULL;
+        r.return_size = 0;
+        return r;
     }
 
     if(d->d_type == DT_DIR) {
-    dent.entType = 1;
+        dent->entType = 1;
     }
     else if(d->d_type == DT_REG) {
-    dent.entType = 0;
+        dent->entType = 0;
     }
     else {
-    dent.entType = -1;
+        dent->entType = -1;
     }
 
-    memcpy(&(dent.entName), &(d->d_name), 256);
-    return &dent;
-    */
+    memcpy(&(dent->entName), &(d->d_name), 256);
+
+    r.return_val = dent;
+    r.return_size = sizeof(dent);
+
     return r;
 }
 
