@@ -143,12 +143,14 @@ return_type fsOpenDir(const int nparams, arg_type* a) {
 
     char* folder = (char *)a->arg_val;
 
-    char* full_path = base_folder;
+    printf("fsOpenDir(), folder is: %s\n", folder);
+    char* full_path = malloc(strlen(base_folder)+strlen(folder)+1+1);
+    strcpy(full_path, base_folder);
     strcat(full_path, "/");
     strcat(full_path, folder);
+    printf("fsOpenDir(), the full path is: %s\n", full_path);
 
     DIR *dir;
-    printf("fsOpenDir(), the full path is: %s\n", full_path);
     dir = opendir(full_path);
     FSDIR *fsdir;
     fsdir = malloc(sizeof(FSDIR));
@@ -244,7 +246,8 @@ return_type fsOpen(const int nparams, arg_type* a) {
     char* fname = (char *)a->arg_val;
     int mode = *(int *)a->next->arg_val;
 
-    char* full_path = base_folder;
+    char* full_path = malloc(strlen(base_folder)+strlen(fname)+1+1);
+    strcpy(full_path, base_folder);
     strcat(full_path, "/");
     strcat(full_path, fname);
 
