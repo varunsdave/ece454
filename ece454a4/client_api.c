@@ -67,8 +67,8 @@ FSDIR* fsOpenDir(const char *folderName) {
      
      printf("returnOpenDir value from server.. need to be parsed \n");
     
-     //int return_val = (*(int *)(ans.return_val));
-     int return_val = 1;
+     int return_val = (*(int *)(ans.return_val));
+     //int return_val = 1;
      printf("returnValue is correct in OpenDir \n");
      FSDIR dirFolder;
      FSDIR *ptrDirFolder;
@@ -82,7 +82,7 @@ FSDIR* fsOpenDir(const char *folderName) {
               return NULL;}
 
      else {
-        printf("returning ptr to dir Folder \n"); 
+        printf("returning ptr to dir Folder: the returned value is %i    and fsDirptr value is %i \n",return_val, ptrDirFolder->num); 
         return ptrDirFolder;
      } 
      
@@ -100,10 +100,19 @@ FSDIR* fsOpenDir(const char *folderName) {
 }
 
 int fsCloseDir(FSDIR *folder) {
-    
-    int retur_val;
-
-    // return_type ans = make_remote_call(serverIpOrDomainName, serverPort, "fsCloseDir",1,sizeof(int),(void *)(&folder));
+    printf("fsCloseDir(), enter fsCloseDir\n");    
+    //int retur_val;
+    int  fsDirPtr = folder->num;
+    printf("fsCloseDir(): Enter: %i\n",fsDirPtr);
+    return_type ans = make_remote_call(serverIpOrDomainName, serverPort, "fsCloseDir",1,sizeof(int),(void *)(&fsDirPtr));
+    int return_val = (*(int *)(ans.return_val));
+    printf("fsCloseDir(), return_val is %i",return_val);
+    if (return_val == 0){
+       return return_val;
+    }
+    else {
+       return -1;
+    }
     //return(closedir(folder));
     return 0;
 }

@@ -46,7 +46,14 @@ int main(int argc, char *argv[]) {
     if(fd == NULL) {
 	perror("fsOpenDir"); exit(1);
     }
-    printf ("successfully opened dir \n");
+    printf ("successfully opened dir with id of FSDIR: %i \n",fd->num);
+    int closeCheck = fsCloseDir(fd);
+    if (closeCheck == 0){
+        printf("successfully closed dir\n");
+    }
+    else {
+       printf("close dir failed \n");
+    }
     return 0;
     struct fsDirent *fdent = NULL;
     for(fdent = fsReadDir(fd); fdent != NULL; fdent = fsReadDir(fd)) {

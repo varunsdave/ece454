@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
+#include <errno.h>
 #include "simplified_rpc/ece454rpc_types.h"
 #include "fsOtherIncludes.h"
 
@@ -47,25 +48,32 @@ void store_fsdir(FSDIR *fsdir) {
     new_fsdir_entry = malloc(sizeof(struct fsdir_entry));
 
     new_fsdir_entry->fsdir = fsdir;
-
+    new_fsdir_entry->next = NULL;
+  
     if (fsdir_head == NULL) {
         fsdir_head = new_fsdir_entry;
-        fsdir_tail = new_fsdir_entry;
+        fsdir_tail = fsdir_head;
     }
     else {
         fsdir_tail->next = new_fsdir_entry;
         fsdir_tail = new_fsdir_entry;
     }
+    printf("fsDir num value stored as: %i\n", fsdir_tail->fsdir->num);
+    printf("fsDir head num value stored as: %i\n", fsdir_head->fsdir->num);
 }
 
 DIR* get_dir_from_fsdir_num(int num) {
     DIR* d = NULL;
-
+    
+    printf("fsCloseDir(), fsDir head num value stored as: %i\n", fsdir_head->fsdir->num);
     struct fsdir_entry* fsdir_p = fsdir_head;
-
+ 
     while (fsdir_p != NULL) {
+        FSDIR* temp = fsdir_p->fsdir;
+        printf("temp poitner created and the num is: %i \n", temp->num);
         if (fsdir_p->fsdir->num == num) {
             d = fsdir_p->fsdir->dir;
+            printf("found the D \n");
             break;
         }
 
@@ -78,7 +86,10 @@ DIR* get_dir_from_fsdir_num(int num) {
 int close_fsdir(FSDIR fsdir) {
     DIR* d = get_dir_from_fsdir_num(fsdir.num);
 
-    return closedir(d);
+    int ret = closedir(d);
+    printf("close_fsdir(): %i with errono %s\n", ret,strerror(errno));
+
+    return ret;
 }
 
 return_type fsMount(const int nparams, arg_type* a) {
@@ -134,9 +145,11 @@ return_type fsOpenDir(const int nparams, arg_type* a) {
     char* folder = (char *)a->arg_val;
 
     char* full_path = base_folder;
+    strcat(full_path, "/");
     strcat(full_path, folder);
 
     DIR *dir;
+    printf("fsOpenDir(), the full path is: %s\n", full_path);
     dir = opendir(full_path);
     printf("entered fsOpenFDir on server\n");
     FSDIR *fsdir;
@@ -147,8 +160,11 @@ return_type fsOpenDir(const int nparams, arg_type* a) {
     fsdir->dir = dir;
     printf("initialized fsDir values now about to enter storeFsDir\n");
     store_fsdir(fsdir);
+    
     printf("stored fsDir succeffully \n");
-    r.return_val = (void *)(&(fsdir->num));
+    int* fsdirNumVal = malloc(sizeof(int));
+    *fsdirNumVal = fsdir->num;
+    r.return_val = fsdirNumVal;
     r.return_size = sizeof(int);
 
     printf ("returning fsOpenDir\n");
