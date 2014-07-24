@@ -42,20 +42,21 @@ int main(int argc, char *argv[]) {
     printf("fsMount(): %d\n", fsMount(argv[1], atoi(argv[2]), dirname));
 
     FSDIR *fd = fsOpenDir(dirname);
-    
+    printf("client app, returned fd-> num is: %i\n",fd->num) ;
     if(fd == NULL) {
 	perror("fsOpenDir"); exit(1);
     }
     printf ("successfully opened dir with id of FSDIR: %i \n",fd->num);
-    int closeCheck = fsCloseDir(fd);
-    if (closeCheck == 0){
-        printf("successfully closed dir\n");
-    }
-    else {
-       printf("close dir failed \n");
-    }
-    return 0;
+   // int closeCheck = fsCloseDir(fd);
+  //  if (closeCheck == 0){
+  //      printf("successfully closed dir\n");
+  //  }
+  //  else {
+   //    printf("close dir failed \n");
+   // }
+    //return 0;
     struct fsDirent *fdent = NULL;
+    printf("client app, fd->num is : %i\n",fd->num);
     for(fdent = fsReadDir(fd); fdent != NULL; fdent = fsReadDir(fd)) {
 	printf("\t %s, %d\n", fdent->entName, (int)(fdent->entType));
     }
@@ -65,7 +66,7 @@ int main(int argc, char *argv[]) {
     }
 
     printf("fsCloseDir(): %d\n", fsCloseDir(fd));
-
+    return 0;
     int ff = open("/dev/urandom", 0);
     if(ff < 0) {
 	perror("open(/dev/urandom)"); exit(1);

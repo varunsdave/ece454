@@ -87,7 +87,6 @@ int close_fsdir(FSDIR fsdir) {
     DIR* d = get_dir_from_fsdir_num(fsdir.num);
 
     int ret = closedir(d);
-    printf("close_fsdir(): %i with errono %s\n", ret,strerror(errno));
 
     return ret;
 }
@@ -203,6 +202,7 @@ return_type fsReadDir(const int nparams, arg_type* a) {
     FSDIR fsdir;
     fsdir.num = *(int *)a->arg_val;
 
+    printf("num %i\n", fsdir.num);
     DIR* dir = get_dir_from_fsdir_num(fsdir.num);
 
     struct fsDirent* dent = malloc(sizeof(struct fsDirent));

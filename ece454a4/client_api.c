@@ -70,10 +70,7 @@ FSDIR* fsOpenDir(const char *folderName) {
      int return_val = (*(int *)(ans.return_val));
      //int return_val = 1;
      printf("returnValue is correct in OpenDir \n");
-     FSDIR dirFolder;
-     FSDIR *ptrDirFolder;
-
-     ptrDirFolder = &dirFolder;
+     FSDIR* ptrDirFolder = malloc(sizeof(FSDIR));
 
      printf("FSDIR dirFolder variable Created \n");
      ptrDirFolder->num = return_val;
@@ -92,10 +89,10 @@ int fsCloseDir(FSDIR *folder) {
     printf("fsCloseDir(), enter fsCloseDir\n");    
     //int retur_val;
     int  fsDirPtr = folder->num;
-    printf("fsCloseDir(): Enter: %i\n",fsDirPtr);
+    printf("fsCloseDir(): folder num value is: %i\n",fsDirPtr);
     return_type ans = make_remote_call(serverIpOrDomainName, serverPort, "fsCloseDir",1,sizeof(int),(void *)(&fsDirPtr));
     int return_val = (*(int *)(ans.return_val));
-    printf("fsCloseDir(), return_val is %i",return_val);
+    printf("fsCloseDir(), return_val is %i\n",return_val);
     if (return_val == 0){
        return return_val;
     }
@@ -109,7 +106,6 @@ int fsCloseDir(FSDIR *folder) {
 
 struct fsDirent *fsReadDir(FSDIR *folder) {
     printf("fsReadDir(), entering function \n");
-    struct dirent *dent;
     int fsDirPtrNum = folder->num;
     return_type ans = make_remote_call(serverIpOrDomainName, serverPort, "fsReadDir",1, sizeof(int), (void *)(&fsDirPtrNum));
     
@@ -120,13 +116,13 @@ struct fsDirent *fsReadDir(FSDIR *folder) {
         printf("fsReadDir(), error or end of folder found\n");
     }
     else{
-         printf("fsReadDir(), return fine \n");
+   //      printf("fsReadDir(), return fine \n");
     }
     
  
 
-    printf("fsReadDir(), exiting function\n");
-    return &dent;
+  //  printf("fsReadDir(), exiting function\n");
+    return return_val;;
     /* const int initErrno = errno;
     struct dirent *d = readdir(folder->dir);
    
