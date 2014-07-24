@@ -123,26 +123,6 @@ struct fsDirent *fsReadDir(FSDIR *folder) {
 
   //  printf("fsReadDir(), exiting function\n");
     return return_val;;
-    /* const int initErrno = errno;
-    struct dirent *d = readdir(folder->dir);
-   
-    if(d == NULL) {
-	if(errno == initErrno) errno = 0;
-	return NULL;
-    }
-
-    if(d->d_type == DT_DIR) {
-	dent.entType = 1;
-    }
-    else if(d->d_type == DT_REG) {
-	dent.entType = 0;
-    }
-    else {
-	dent.entType = -1;
-    }
-
-    memcpy(&(dent.entName), &(d->d_name), 256);
-    return &dent;*/
 }
 
 int fsOpen(const char *fname, int mode) {
