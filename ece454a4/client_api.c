@@ -114,9 +114,7 @@ struct fsDirent *fsReadDir(FSDIR *folder) {
     
     if (return_val == NULL ){
         printf("fsReadDir(), error or end of folder found\n");
-    }
-    else{
-   //      printf("fsReadDir(), return fine \n");
+        
     }
     
  
@@ -126,6 +124,8 @@ struct fsDirent *fsReadDir(FSDIR *folder) {
 }
 
 int fsOpen(const char *fname, int mode) {
+    
+    printf("fsOpen(), entering client call function \n");
     int flags = -1;
 
     if(mode == 0) {
@@ -141,7 +141,7 @@ int fsOpen(const char *fname, int mode) {
     
     // return open file structure signatue
     int return_val =  (*(int *)(ans.return_val));
-
+    printf("fsOpen(), client, returned value is : %i\n",return_val);
     if (return_val == -1){
        errno = ENOENT;
        return return_val;
@@ -153,8 +153,8 @@ int fsOpen(const char *fname, int mode) {
 }
 
 int fsClose(int fd) {
-
-    close(fd); // close on client side;
+    printf("fsClose(), entering fsClose function with int fd as: %i\n",fd);
+//    close(fd); // close on client side;
     return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsClose",1,sizeof(int),(void *)(& fd));
 
     
@@ -163,7 +163,7 @@ int fsClose(int fd) {
     // return server side fd
    
     int return_val =  (*(int *)(ans.return_val));
-    
+    printf("fsClose(), returned value is: %i\n",return_val);
     if (return_val != -1){
         return return_val;
     }
@@ -199,7 +199,7 @@ int fsWrite(int fd, const void *buf, const unsigned int count) {
     int return_val = (*(int *) ( ans.return_val));
 
 
-    write(fd, buf, (size_t)count);
+ //   write(fd, buf, (size_t)count);
     
     if (return_val != -1){
         return return_val;
@@ -215,7 +215,7 @@ int fsRemove(const char *name) {
 
    int return_val = (*(int *)(ans.return_val));
    
-   int local_remove = remove(name);
+//   int local_remove = remove(name);
 
    if (return_val != -1){
        return return_val;

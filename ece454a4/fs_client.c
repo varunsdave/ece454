@@ -66,13 +66,13 @@ int main(int argc, char *argv[]) {
     }
 
     printf("fsCloseDir(): %d\n", fsCloseDir(fd));
-    return 0;
+    //return 0;
     int ff = open("/dev/urandom", 0);
     if(ff < 0) {
 	perror("open(/dev/urandom)"); exit(1);
     }
     else printf("open(): %d\n", ff);
-
+    return 0;
     char fname[256];
     sprintf(fname, "%s/", dirname);
     if(read(ff, (void *)(fname+strlen(dirname)+1), 10) < 0) {
