@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
 	perror("open(/dev/urandom)"); exit(1);
     }
     else printf("open(): %d\n", ff);
-    return 0;
+    //return 0;
     char fname[256];
     sprintf(fname, "%s/", dirname);
     if(read(ff, (void *)(fname+strlen(dirname)+1), 10) < 0) {
@@ -100,7 +100,7 @@ int main(int argc, char *argv[]) {
     if(ff < 0) {
 	perror("fsOpen(write)"); exit(1);
     }
-
+    return 0;
     if(fsWrite(ff, buf, 256) < 256) {
 	fprintf(stderr, "fsWrite() wrote fewer than 256\n");
     }
