@@ -160,9 +160,11 @@ return_type fsCloseDir(const int nparams, arg_type* a) {
     FSDIR fsdir;
     fsdir.num = *(int *)a->arg_val;
 
-    int return_val = close_fsdir(fsdir);
+    int* return_val = malloc(sizeof(int));
 
-    r.return_val = &return_val;
+    *return_val = close_fsdir(fsdir);
+
+    r.return_val = return_val;
     r.return_size = sizeof(return_val);
 
     return r;
