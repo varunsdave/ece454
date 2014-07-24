@@ -8,6 +8,9 @@
 #include <string.h>
 #include <dirent.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include "simplified_rpc/ece454rpc_types.h"
 #include "fsOtherIncludes.h"
 
@@ -93,7 +96,6 @@ int close_fsdir(FSDIR fsdir) {
 
 return_type fsMount(const int nparams, arg_type* a) {
     if (nparams != 1) {
-        printf("np\n"); fflush(stdout);
         // error
         r.return_val = NULL;
         r.return_size = 0;
@@ -101,7 +103,6 @@ return_type fsMount(const int nparams, arg_type* a) {
     }
 
     if (a->arg_size != sizeof(int)) {
-        printf("as\n"); fflush(stdout);
         // error
         r.return_val = NULL;
         r.return_size = 0;
@@ -109,8 +110,7 @@ return_type fsMount(const int nparams, arg_type* a) {
     }
 
     int* ret_val = malloc(sizeof(int));
-
-    memcpy(ret_val, a->arg_val, sizeof(int));
+    *ret_val = *(int *)a->arg_val;
 
     r.return_val = ret_val;
     r.return_size = sizeof(int);
@@ -236,16 +236,35 @@ return_type fsReadDir(const int nparams, arg_type* a) {
 }
 
 return_type fsOpen(const int nparams, arg_type* a) {
-    /*int flags = -1;
+    if (nparams != 2) {
+        // error
+        r.return_val = NULL;
+        r.return_size = 0;
+        return r;
+    }
+
+    char* fname = (char *)a->arg_val;
+    int mode = *(int *)a->next->arg_val;
+
+    char* full_path = base_folder;
+    strcat(full_path, "/");
+    strcat(full_path, fname);
+
+    int flags = -1;
 
     if(mode == 0) {
-    flags = O_RDONLY;
+        flags = O_RDONLY;
     }
     else if(mode == 1) {
-    flags = O_WRONLY | O_CREAT;
+        flags = O_WRONLY | O_CREAT;
     }
 
-    return(open(fname, flags, S_IRWXU));*/
+    int* return_val = malloc(sizeof(int));
+    *return_val = open(full_path, flags, S_IRWXU);
+
+    r.return_val = return_val;
+    r.return_size = sizeof(int);
+
     return r;
 }
 
