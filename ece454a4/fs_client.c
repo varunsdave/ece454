@@ -95,20 +95,20 @@ int main(int argc, char *argv[]) {
     printBuf(buf, 256);
 
     printf("close(): %d\n", close(ff));
-
+    
     ff = fsOpen(fname, 1);
     if(ff < 0) {
 	perror("fsOpen(write)"); exit(1);
     }
-    return 0;
+    //return 0;
     if(fsWrite(ff, buf, 256) < 256) {
 	fprintf(stderr, "fsWrite() wrote fewer than 256\n");
     }
-
+    //return 0;
     if(fsClose(ff) < 0) {
 	perror("fsClose"); exit(1);
     }
-
+    //return 0;
     char readbuf[256];
     if((ff = fsOpen(fname, 0)) < 0) {
 	perror("fsOpen(read)"); exit(1);
@@ -130,7 +130,7 @@ int main(int argc, char *argv[]) {
     if(fsClose(ff) < 0) {
 	perror("fsClose"); exit(1);
     }
-
+   // return 0;
     printf("fsRemove(%s): %d\n", fname, fsRemove(fname));
 
     if(fsUnmount(dirname) < 0) {

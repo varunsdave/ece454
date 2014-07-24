@@ -11,6 +11,10 @@
 #include "ece454_fs.h"
 #include <string.h>
 #include "simplified_rpc/ece454rpc_types.h"
+#include "fsOtherIncludes.h"
+#include <sys/types.h>
+#include <stdlib.h>
+#include <dirent.h>
 
 struct fsDirent dent;
 
@@ -48,9 +52,9 @@ int fsMount(const char *srvIpOrDomName, const unsigned int srvPort, const char *
 
 int fsUnmount(const char *localFolderName) {
     
-    //int dummyCheckSum = 1;
+    int dummyCheckSum = 1;
     
-     return_type ans = make_remote_call(serverIpOrDomainName, serverPort, "fsUnmount", 1, strlen(localFolderName)+1, localFolderName);
+     return_type ans = make_remote_call(serverIpOrDomainName, serverPort, "fsUnmount", 1, sizeof(int), (void *)(&dummyCheckSum));
      int return_val = (*(int *)(ans.return_val));
      if (return_val != -1){
         return return_val;}
@@ -70,6 +74,7 @@ FSDIR* fsOpenDir(const char *folderName) {
      int return_val = (*(int *)(ans.return_val));
      //int return_val = 1;
      printf("returnValue is correct in OpenDir \n");
+    
      FSDIR* ptrDirFolder = malloc(sizeof(FSDIR));
 
      printf("FSDIR dirFolder variable Created \n");
@@ -165,11 +170,12 @@ int fsClose(int fd) {
 }
 
 int fsRead(int fd, void *buf, const unsigned int count) {
-    return_type ans = make_remote_call (serverIpOrDomainName, serverPort,"fsRead",3,sizeof(int),(void *)(&fd), count, &buf, sizeof(unsigned int), count);
-    int return_val = (*(int *) (ans.return_val));
-
-  
-    int local_red_val = read(fd, buf, (size_t)count);
+    return_type ans = make_remote_call (serverIpOrDomainName, serverPort,"fsRead",3,sizeof(int),(void *)(&fd), count, (void *)buf, sizeof(int), (void *)(&count));
+    int return_val = ans.return_size;
+    printf("fsRead(), return_val = %i\n",return_val);
+    memcpy(buf, ans.return_val,ans.return_size);
+    printBuf(buf,return_val);
+    //int local_red_val = read(fd, buf, (size_t)count);
 
     if (return_val != -1){
        return return_val;
@@ -182,15 +188,15 @@ int fsRead(int fd, void *buf, const unsigned int count) {
 int fsWrite(int fd, const void *buf, const unsigned int count) {
 
     // attempt to write to the server
-
-    return_type ans = make_remote_call (serverIpOrDomainName, serverPort,"fsWrite",3,sizeof(int),(void *)(&fd),(int) count, &buf, sizeof (unsigned int), count);
-    
+    printf("fsWrite(), entering function with fd %i\n", fd); 
+    return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsWrite",3,sizeof(int),(void *)(&fd),(int) count, (void *)(buf), sizeof(int), (void *)(&count));
+     
 
     int return_val = (*(int *) ( ans.return_val));
 
 
  //   write(fd, buf, (size_t)count);
-    
+    printf("fsWrite(), return value after rpc is %i\n",return_val);    
     if (return_val != -1){
         return return_val;
     } 

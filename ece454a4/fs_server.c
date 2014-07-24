@@ -14,6 +14,9 @@
 #include "simplified_rpc/ece454rpc_types.h"
 #include "fsOtherIncludes.h"
 
+
+
+
 #if 0
 #define _DEBUG_1_
 #endif
@@ -45,6 +48,31 @@ struct fsdir_entry {
     FSDIR* fsdir;
     struct fsdir_entry *next;
 };
+void printBuf(char *buf, int size) {
+    /* Should match the output from od -x */
+    int i;
+    for(i = 0; i < size; ) {
+        if(i%16 == 0) {
+            printf("%08o ", i);
+        }
+
+        int j;
+        for(j = 0; j < 16;) {
+            int k;
+            for(k = 0; k < 2; k++) {
+                if(i+j+(1-k) < size) {
+                    printf("%02x", (unsigned char)(buf[i+j+(1-k)]));
+                }
+            }
+
+            printf(" ");
+            j += k;
+        }
+
+        printf("\n");
+        i += j;
+    }
+}
 
 void store_fsdir(FSDIR *fsdir) {
     struct fsdir_entry* new_fsdir_entry;
@@ -119,18 +147,28 @@ return_type fsMount(const int nparams, arg_type* a) {
 }
 
 return_type fsUnmount(const int nparams, arg_type* a) {
-    if (nparams != 0) {
+     if (nparams != 1) {
         // error
         r.return_val = NULL;
         r.return_size = 0;
         return r;
     }
 
-    int return_val = 0;
-    r.return_val = &return_val;
+    if (a->arg_size != sizeof(int)) {
+        // error
+        r.return_val = NULL;
+        r.return_size = 0;
+        return r;
+    }
+
+    int* ret_val = malloc(sizeof(int));
+    *ret_val = *(int *)a->arg_val;
+
+    r.return_val = ret_val;
     r.return_size = sizeof(int);
 
     return r;
+
 }
 
 return_type fsOpenDir(const int nparams, arg_type* a) {
@@ -266,7 +304,7 @@ return_type fsOpen(const int nparams, arg_type* a) {
 
     r.return_val = return_val;
     r.return_size = sizeof(int);
-
+    printf("fsOpen(), end\n");
     return r;
 }
 
@@ -280,10 +318,11 @@ return_type fsClose(const int nparams, arg_type* a) {
 
     int fd = *(int *)a->arg_val;
 
-    int return_val = close(fd);
+    int *return_val = malloc(sizeof(int));
+    *return_val =  close(fd);
 
-    r.return_val = &return_val;
-    r.return_size = sizeof(return_val);
+    r.return_val = return_val;
+    r.return_size = sizeof(int);
 
     return r;
 }
@@ -297,7 +336,16 @@ return_type fsRead(const int nparams, arg_type* a) {
     }
 
     int fd = *(int *)a->arg_val;
-    //return(read(fd, buf, (size_t)count));
+    int count = *(int *)a->next->next->arg_val;
+    void *buf = malloc(count);
+
+    int *return_val = malloc(sizeof(int));
+    *return_val = read(fd,buf,(size_t)count);
+    
+    r.return_val = buf;
+    r.return_size = count;
+    printf("%i \n", r.return_size);
+    printBuf(buf,r.return_size);
     return r;
 }
 
@@ -308,10 +356,19 @@ return_type fsWrite(const int nparams, arg_type* a) {
         r.return_size = 0;
         return r;
     }
-
+    printf("fsWrite(), entering");
+    int fd = *(int *)a->arg_val;
     //int fd = *(int *)a->arg_val;
+    unsigned int count = *(int *)a->next->next->arg_val;
+    void *buf = malloc(count);
+    memcpy(buf, a->next->arg_val, count);
+    printf("fsWrite(), server \n");
+    printBuf(buf,count);
+    int *return_val = malloc(sizeof(int));
+    *return_val =  write(fd,buf,(size_t)count);
     //write(fd, buf, (size_t)count);
-
+    r.return_val = return_val;
+    r.return_size = sizeof(int);
     return r;
 }
 
@@ -323,10 +380,12 @@ return_type fsRemove(const int nparams, arg_type* a) {
         return r;
     }
 
-    char* file_name = (char *)a->arg_val;
-    char* full_path = base_folder;
+    char* fname = (char *)a->arg_val;
+
+    char* full_path = malloc(strlen(base_folder)+strlen(fname)+1+1);
+    strcpy(full_path, base_folder);
     strcat(full_path, "/");
-    strcat(full_path, file_name);
+    strcat(full_path,fname);
 
     int* return_val = malloc(sizeof(int));
     *return_val = remove(full_path);
