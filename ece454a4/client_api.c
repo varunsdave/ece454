@@ -126,18 +126,8 @@ struct fsDirent *fsReadDir(FSDIR *folder) {
 int fsOpen(const char *fname, int mode) {
     
     printf("fsOpen(), entering client call function \n");
-    int flags = -1;
 
-    if(mode == 0) {
-	flags = O_RDONLY;
-    }
-    else if(mode == 1) {
-	flags = O_WRONLY | O_CREAT;
-    }
-    
-    // make rpc to open file structure and return the rpc value
-
-    return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsOpen",2,strlen(fname)+1,fname, sizeof(int),(void *)(&flags));
+    return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsOpen",2,strlen(fname)+1,fname, sizeof(int),(void *)(&mode));
     
     // return open file structure signatue
     int return_val =  (*(int *)(ans.return_val));
