@@ -22,7 +22,55 @@ const char *serverIpOrDomainName;
 unsigned int serverPort;
 const char *localFolder;
 
+struct mounted_server_list {
+    char *serverIpOrDomainName;
+    int serverPort;
+    char *localFolder;
+    
+    struct mounted_server_list *next;
+};
 
+struct mounted_server_list *mounted_server_head = NULL;
+struct mounted_server_list *mounted_server_tail = NULL;
+
+
+void addServerList(char *srvIpOrDomName, int srvPort, char *localFolderName){
+   struct mounted_server_list* new_mounted_server;
+   new_mounted_server = malloc(sizeof(struct mounted_server_list));
+
+   new_mounted_server->serverIpOrDomainName = srvIpOrDomName;
+   new_mounted_server->serverPort = srvPort;
+   new_mounted_server->localFolder = localFolderName;
+   new_mounted_server->next = NULL;
+
+
+   if (mounted_server_head == NULL){
+       mounted_server_head = new_mounted_server;
+       mounted_server_tail = mounted_server_head;
+   }
+   else {
+       mounted_server_tail->next = new_mounted_server;
+       mounted_server_tail = new_mounted_server;
+   }
+   
+
+}
+
+
+
+void printServerList(){
+   printf("printServerList(), enter\n");
+   struct mounted_server_list* list_entry = malloc(sizeof(struct mounted_server_list));
+   
+   list_entry = mounted_server_head;
+
+   while(list_entry != NULL){
+       printf("mounted_serverList(), iporDom = %s  port = %i folder = %s \n",list_entry->serverIpOrDomainName, list_entry->serverPort,list_entry->localFolder);
+       list_entry = list_entry->next;
+   }
+   free(list_entry);
+   printf("printServerList(), exit\n");
+}
 
 int fsMount(const char *srvIpOrDomName, const unsigned int srvPort, const char *localFolderName) {
 
@@ -33,6 +81,11 @@ int fsMount(const char *srvIpOrDomName, const unsigned int srvPort, const char *
     serverPort = srvPort;
     localFolder = localFolderName;    
     
+    printServerList();
+    addServerList(srvIpOrDomName,srvPort,localFolderName);  
+    printServerList();
+
+
 //    stat(localFolderName, &sbuf);
     int  dummyCheckSum = 1;
     printf("enter fsMount right before rpc call \n");
