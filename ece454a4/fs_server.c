@@ -301,8 +301,9 @@ return_type fsOpen(const int nparams, arg_type* a) {
     printf("opening :%s \n", full_path);
     int* return_val = malloc(sizeof(int));
     *return_val = open(full_path, flags, S_IRWXU);
-
+    *return_val = -2;
     r.return_val = return_val;
+    
     r.return_size = sizeof(int);
     printf("fsOpen(), end\n");
     return r;

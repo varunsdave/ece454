@@ -33,7 +33,7 @@ int fsMount(const char *srvIpOrDomName, const unsigned int srvPort, const char *
     serverPort = srvPort;
     localFolder = localFolderName;    
     
-    stat(localFolderName, &sbuf);
+//    stat(localFolderName, &sbuf);
     int  dummyCheckSum = 1;
     printf("enter fsMount right before rpc call \n");
 
@@ -131,12 +131,18 @@ struct fsDirent *fsReadDir(FSDIR *folder) {
 int fsOpen(const char *fname, int mode) {
     
     printf("fsOpen(), entering client call function \n");
-
+    int return_val = 0;    
+    do {
     return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsOpen",2,strlen(fname)+1,fname, sizeof(int),(void *)(&mode));
     
     // return open file structure signatue
-    int return_val =  (*(int *)(ans.return_val));
+     return_val =  (*(int *)(ans.return_val));
+     sleep(1);
+    } while (
+       return_val == -2
+    );
     printf("fsOpen(), client, returned value is : %i\n",return_val);
+    
     if (return_val == -1){
        errno = ENOENT;
        return return_val;
