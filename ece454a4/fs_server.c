@@ -43,11 +43,21 @@ extern printRegisteredProcedures();
 struct fsdir_entry* fsdir_head = NULL;
 struct fsdir_entry* fsdir_tail = NULL;
 
-/* Linked list of fsdirs opened by clients*/
+// Linked list of fsdirs opened by clients
 struct fsdir_entry {
     FSDIR* fsdir;
-    struct fsdir_entry *next;
+    struct fsdir_entry* next;
 };
+
+// Linked list of open files
+struct open_files {
+    char* filepath;
+    struct open_files* next;
+};
+
+struct open_files* files_head = NULL;
+struct open_files* files_tail = NULL;
+
 void printBuf(char *buf, int size) {
     /* Should match the output from od -x */
     int i;
@@ -71,6 +81,66 @@ void printBuf(char *buf, int size) {
 
         printf("\n");
         i += j;
+    }
+}
+
+void store_open_file(char* filepath) {
+    struct open_files* new_open_file;
+    new_open_file = malloc(sizeof(struct open_files));
+
+    new_open_file->filepath = malloc(strlen(filepath)+1);
+    strcpy(new_open_file->filepath, filepath);
+    new_open_file->next = NULL;
+  
+    if (files_head == NULL) {
+        files_head = new_open_file;
+        files_tail = files_head;
+    }
+    else {
+        files_tail->next = new_open_file;
+        files_tail = new_open_file;
+    }
+}
+
+int is_file_open(char* filepath) {
+    struct open_files* open_file_p = files_head;
+
+    int file_open = 0;
+ 
+    while (open_file_p != NULL) {
+        char* temp = open_file_p->filepath;
+
+        if (strcmp(temp, filepath) == 0) {
+            file_open = 1;
+            break;
+        }
+
+        open_file_p = open_file_p->next;
+    }
+
+    return file_open;
+}
+
+void delete_open_file(char* filepath) {
+    struct open_files* open_file_p = files_head;
+    struct open_files* open_file_p_prev = NULL;
+
+    while (open_file_p != NULL) {
+        char* temp = open_file_p->filepath;
+
+        if (strcmp(temp, filepath) == 0) {
+            if (open_file_p == files_head) {
+                files_head = open_file_p->next;
+                free(open_file_p);
+            } else {
+                open_file_p_prev->next = open_file_p->next;
+                free(open_file_p);
+            }
+            break;
+        }
+
+        open_file_p_prev = open_file_p;
+        open_file_p = open_file_p->next;
     }
 }
 
@@ -118,6 +188,8 @@ int close_fsdir(FSDIR fsdir) {
     DIR* d = get_dir_from_fsdir_num(fsdir.num);
 
     int ret = closedir(d);
+
+    // remove fsdir from linked list
 
     return ret;
 }
@@ -190,6 +262,14 @@ return_type fsOpenDir(const int nparams, arg_type* a) {
 
     DIR *dir;
     dir = opendir(full_path);
+
+    if (dir == NULL) {
+        // error
+        r.return_val = NULL;
+        r.return_size = 0;
+        return r;
+    }
+
     FSDIR *fsdir;
     fsdir = malloc(sizeof(FSDIR));
     fsdir_num_counter += 1;
@@ -289,6 +369,16 @@ return_type fsOpen(const int nparams, arg_type* a) {
     strcat(full_path, "/");
     strcat(full_path, fname);
 
+    if (is_file_open(full_path) == 1) {
+        int* return_val = malloc(sizeof(int));
+        *return_val = -2;
+        r.return_val = return_val;
+        r.return_size = sizeof(int);
+        return r;
+    }
+
+    store_open_file(full_path);
+
     int flags = -1;
 
     if(mode == 0) {
@@ -301,10 +391,10 @@ return_type fsOpen(const int nparams, arg_type* a) {
     printf("opening :%s \n", full_path);
     int* return_val = malloc(sizeof(int));
     *return_val = open(full_path, flags, S_IRWXU);
-    *return_val = -2;
     r.return_val = return_val;
-    
     r.return_size = sizeof(int);
+
+    free(full_path);
     printf("fsOpen(), end\n");
     return r;
 }
