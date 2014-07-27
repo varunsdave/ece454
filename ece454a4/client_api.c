@@ -21,12 +21,13 @@ struct fsDirent dent;
 const char *serverIpOrDomainName;
 unsigned int serverPort;
 const char *localFolder;
+int folderNameSize;
 
 struct mounted_server_list {
     char *serverIpOrDomainName;
     int serverPort;
-    char *localFolder;
-    
+    char *localFolder; 
+    int folderNameSize;    
     struct mounted_server_list *next;
 };
 
@@ -34,13 +35,14 @@ struct mounted_server_list *mounted_server_head = NULL;
 struct mounted_server_list *mounted_server_tail = NULL;
 
 
-void addServerList(char *srvIpOrDomName, int srvPort, char *localFolderName){
+void addServerList(char *srvIpOrDomName, int srvPort, char *localFolderName, int folderSize){
    struct mounted_server_list* new_mounted_server;
    new_mounted_server = malloc(sizeof(struct mounted_server_list));
 
    new_mounted_server->serverIpOrDomainName = srvIpOrDomName;
    new_mounted_server->serverPort = srvPort;
    new_mounted_server->localFolder = localFolderName;
+   new_mounted_server->folderNameSize = folderSize;
    new_mounted_server->next = NULL;
 
 
@@ -56,20 +58,92 @@ void addServerList(char *srvIpOrDomName, int srvPort, char *localFolderName){
 
 }
 
+void removeServerEntry(char *localFolderName){
 
+    struct mounted_server_list *entry;
+    struct mounted_server_list *prev_entry;
+
+    entry = malloc(sizeof(struct mounted_server_list));
+    prev_entry = malloc(sizeof(struct mounted_server_list));    
+    entry = mounted_server_head;
+    prev_entry = NULL;
+    int counter = 0;
+    // traverse through entries to find the server
+    while(entry != NULL){
+        int compareResult = strcmp(localFolderName,entry->localFolder);
+        
+        if (compareResult == 0){
+           if (counter == 0){
+              // remove head
+              prev_entry = mounted_server_head;
+              if (entry->next != NULL){
+                 printf("head Removed \n");
+                 entry = entry->next;
+                 mounted_server_head = entry;
+                 break;
+              }
+              else{
+                 mounted_server_head = NULL;
+                 mounted_server_tail = NULL;
+                 printf("removed the only entry in the list \n");
+              }
+
+           }
+           else{
+              //entry = NULL;
+              prev_entry->next = entry->next;
+              
+              free(entry);
+              break;
+           }
+           
+           
+        }
+        counter = counter+1;
+        prev_entry = entry;
+        entry = entry->next; 
+    }
+    
+}
+
+struct mounted_server_list *findEntry (char *localFolderName){
+   struct mounted_server_list *entry;
+   entry = malloc(sizeof(struct mounted_server_list));
+   
+   entry = mounted_server_head;
+   
+   while(entry != NULL){
+      int compareResult = strcmp(localFolderName,entry->localFolder);
+      if (compareResult == 0){
+         return entry;
+      }
+   }
+ 
+   return NULL;
+}
+
+void setRpcInformation (char *localFolderName){
+   struct mounted_server_list *entry = malloc(sizeof(struct mounted_server_list));
+   entry  = findEntry(localFolderName);
+ 
+   serverIpOrDomainName = entry->serverIpOrDomainName;
+   serverPort = entry->serverPort;
+   localFolderName = entry->localFolder;
+   folderNameSize = entry->folderNameSize; 
+}
 
 void printServerList(){
-   printf("printServerList(), enter\n");
+   //printf("printServerList(), enter\n");
    struct mounted_server_list* list_entry = malloc(sizeof(struct mounted_server_list));
    
    list_entry = mounted_server_head;
 
    while(list_entry != NULL){
-       printf("mounted_serverList(), iporDom = %s  port = %i folder = %s \n",list_entry->serverIpOrDomainName, list_entry->serverPort,list_entry->localFolder);
+       printf("mounted_serverList(), iporDom = %s  port = %i folder = %s size = %i \n",list_entry->serverIpOrDomainName, list_entry->serverPort,list_entry->localFolder, list_entry->folderNameSize);
        list_entry = list_entry->next;
    }
    free(list_entry);
-   printf("printServerList(), exit\n");
+   //printf("printServerList(), exit\n");
 }
 
 int fsMount(const char *srvIpOrDomName, const unsigned int srvPort, const char *localFolderName) {
@@ -80,11 +154,13 @@ int fsMount(const char *srvIpOrDomName, const unsigned int srvPort, const char *
     serverIpOrDomainName = srvIpOrDomName;
     serverPort = srvPort;
     localFolder = localFolderName;    
-    
+    int folderSize = strlen(localFolderName);
+    printf("foldernamesize: %i\n",strlen(localFolderName));
+    //printServerList();
+    addServerList((char *)srvIpOrDomName,srvPort,(char *)localFolderName, folderSize);  
     printServerList();
-    addServerList(srvIpOrDomName,srvPort,localFolderName);  
-    printServerList();
-
+    setRpcInformation(localFolderName);
+    //removeServerEntry((char *)localFolderName);
 
 //    stat(localFolderName, &sbuf);
     int  dummyCheckSum = 1;
@@ -106,7 +182,7 @@ int fsMount(const char *srvIpOrDomName, const unsigned int srvPort, const char *
 int fsUnmount(const char *localFolderName) {
     
     int dummyCheckSum = 1;
-    
+    removeServerEntry(localFolderName); 
      return_type ans = make_remote_call(serverIpOrDomainName, serverPort, "fsUnmount", 1, sizeof(int), (void *)(&dummyCheckSum));
      int return_val = (*(int *)(ans.return_val));
      if (return_val != -1){
@@ -120,12 +196,23 @@ int fsUnmount(const char *localFolderName) {
 }
 
 FSDIR* fsOpenDir(const char *folderName) {
-     return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsOpenDir",1,strlen(folderName)+1, folderName);
+     
+     char *dirName[strlen(folderName)-folderNameSize];
+    
+     strcpy(dirName,(char *)(folderName+folderNameSize));
+          
+     printf("new directory name is %s, the folderNameSize = %i \n",dirName,folderNameSize);
+     return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsOpenDir",1,strlen(folderName)+1, dirName);
      
      printf("returnOpenDir value from server.. need to be parsed \n");
     
-     int return_val = (*(int *)(ans.return_val));
+     //int return_val = (*(int *)(ans.return_val));
+     int return_size = (int)(ans.return_size);
+     if (return_size == 0){
+        return NULL;
+     }
      //int return_val = 1;
+    int return_val = (*(int *)(ans.return_val));
      printf("returnValue is correct in OpenDir \n");
     
      FSDIR* ptrDirFolder = malloc(sizeof(FSDIR));
@@ -135,6 +222,7 @@ FSDIR* fsOpenDir(const char *folderName) {
      ptrDirFolder->dir = NULL; 
      if (return_val == 0){
               return NULL;}
+     
 
      else {
         printf("returning ptr to dir Folder: the returned value is %i    and fsDirptr value is %i \n",return_val, ptrDirFolder->num); 
@@ -185,8 +273,10 @@ int fsOpen(const char *fname, int mode) {
     
     printf("fsOpen(), entering client call function \n");
     int return_val = 0;    
+    char *dirName[strlen(fname)-folderNameSize];
+    strcpy(dirName, (char *)(fname+folderNameSize+1));
     do {
-    return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsOpen",2,strlen(fname)+1,fname, sizeof(int),(void *)(&mode));
+    return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsOpen",2,strlen(fname)+1,dirName, sizeof(int),(void *)(&mode));
     
     // return open file structure signatue
      return_val =  (*(int *)(ans.return_val));
@@ -266,7 +356,9 @@ int fsWrite(int fd, const void *buf, const unsigned int count) {
 
 int fsRemove(const char *name) {
 
-    return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsRemove",1,strlen(name)+1, name);
+    char *dirName[strlen(name)-folderNameSize];
+    strcpy(dirName, (char *)(name+folderNameSize+1));
+    return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsRemove",1,strlen(name)+1, dirName);
 
    int return_val = (*(int *)(ans.return_val));
    

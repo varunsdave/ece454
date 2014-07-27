@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
     }
 
     printf("fsCloseDir(): %d\n", fsCloseDir(fd));
-    return 0;
+    //return 0;
     int ff = open("/dev/urandom", 0);
     if(ff < 0) {
 	perror("open(/dev/urandom)"); exit(1);
