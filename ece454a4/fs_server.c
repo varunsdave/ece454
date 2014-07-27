@@ -52,6 +52,7 @@ struct fsdir_entry {
 // Linked list of open files
 struct open_files {
     char* filepath;
+    int fd;
     struct open_files* next;
 };
 
@@ -84,13 +85,14 @@ void printBuf(char *buf, int size) {
     }
 }
 
-void store_open_file(char* filepath) {
+void store_open_file(char* filepath, int fd) {
     struct open_files* new_open_file;
     new_open_file = malloc(sizeof(struct open_files));
 
     new_open_file->filepath = malloc(strlen(filepath)+1);
     strcpy(new_open_file->filepath, filepath);
     new_open_file->next = NULL;
+    new_open_file->fd = fd;
   
     if (files_head == NULL) {
         files_head = new_open_file;
@@ -121,14 +123,14 @@ int is_file_open(char* filepath) {
     return file_open;
 }
 
-void delete_open_file(char* filepath) {
+void delete_open_file(int fd) {
     struct open_files* open_file_p = files_head;
     struct open_files* open_file_p_prev = NULL;
 
     while (open_file_p != NULL) {
-        char* temp = open_file_p->filepath;
+        int fd_tmp = open_file_p->fd;
 
-        if (strcmp(temp, filepath) == 0) {
+        if (fd == fd_tmp) {
             if (open_file_p == files_head) {
                 files_head = open_file_p->next;
                 free(open_file_p);
@@ -377,8 +379,6 @@ return_type fsOpen(const int nparams, arg_type* a) {
         return r;
     }
 
-    store_open_file(full_path);
-
     int flags = -1;
 
     if(mode == 0) {
@@ -389,8 +389,12 @@ return_type fsOpen(const int nparams, arg_type* a) {
     }
 
     printf("opening :%s \n", full_path);
+    int fd = open(full_path, flags, S_IRWXU);
     int* return_val = malloc(sizeof(int));
-    *return_val = open(full_path, flags, S_IRWXU);
+    *return_val = fd;
+
+    store_open_file(full_path, fd);
+
     r.return_val = return_val;
     r.return_size = sizeof(int);
 
@@ -408,6 +412,8 @@ return_type fsClose(const int nparams, arg_type* a) {
     }
 
     int fd = *(int *)a->arg_val;
+
+    delete_open_file(fd);
 
     int *return_val = malloc(sizeof(int));
     *return_val =  close(fd);
@@ -476,7 +482,16 @@ return_type fsRemove(const int nparams, arg_type* a) {
     char* full_path = malloc(strlen(base_folder)+strlen(fname)+1+1);
     strcpy(full_path, base_folder);
     strcat(full_path, "/");
-    strcat(full_path,fname);
+    strcat(full_path, fname);
+
+    if (is_file_open(full_path) == 1) {
+        // error
+        int* return_val = malloc(sizeof(int));
+        *return_val = -2;
+        r.return_val = return_val;
+        r.return_size = sizeof(int);
+        return r;
+    }
 
     int* return_val = malloc(sizeof(int));
     *return_val = remove(full_path);
