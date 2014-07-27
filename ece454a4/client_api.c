@@ -71,8 +71,9 @@ void removeServerEntry(char *localFolderName){
     // traverse through entries to find the server
     while(entry != NULL){
         int compareResult = strcmp(localFolderName,entry->localFolder);
-        
+        //printf("\t comparing values %s with %s\n",localFolderName, entry->localFolder);         
         if (compareResult == 0){
+           printf("\t foundValues values %s with %s\n",localFolderName, entry->localFolder);         
            if (counter == 0){
               // remove head
               prev_entry = mounted_server_head;
@@ -113,19 +114,21 @@ struct mounted_server_list *findEntry (char *localFolderName){
    entry = mounted_server_head;
    
    while(entry != NULL){
-      int compareResult = strcmp(localFolderName,entry->localFolder);
+      printf("localFolderName=%s  and comparign value is %s and next value is \n",localFolderName,entry->localFolder);
+      int compareResult = strncmp(localFolderName,entry->localFolder,entry->folderNameSize);
       if (compareResult == 0){
          return entry;
       }
+      entry = entry->next;
    }
- 
+   printf("findEntry(), %s not fount\n",localFolderName); 
    return NULL;
 }
 
 void setRpcInformation (char *localFolderName){
    struct mounted_server_list *entry = malloc(sizeof(struct mounted_server_list));
    entry  = findEntry(localFolderName);
- 
+    
    serverIpOrDomainName = entry->serverIpOrDomainName;
    serverPort = entry->serverPort;
    localFolderName = entry->localFolder;
@@ -142,8 +145,9 @@ void printServerList(){
        printf("mounted_serverList(), iporDom = %s  port = %i folder = %s size = %i \n",list_entry->serverIpOrDomainName, list_entry->serverPort,list_entry->localFolder, list_entry->folderNameSize);
        list_entry = list_entry->next;
    }
-   free(list_entry);
-   //printf("printServerList(), exit\n");
+   
+   //free(list_entry);
+   printf("printServerList(), exit\n");
 }
 
 int fsMount(const char *srvIpOrDomName, const unsigned int srvPort, const char *localFolderName) {
@@ -159,7 +163,9 @@ int fsMount(const char *srvIpOrDomName, const unsigned int srvPort, const char *
     //printServerList();
     addServerList((char *)srvIpOrDomName,srvPort,(char *)localFolderName, folderSize);  
     printServerList();
-    setRpcInformation(localFolderName);
+    printf("call rpc info next\n");  
+     setRpcInformation(localFolderName);
+    printf("exit rpc info\n");
     //removeServerEntry((char *)localFolderName);
 
 //    stat(localFolderName, &sbuf);
@@ -196,10 +202,11 @@ int fsUnmount(const char *localFolderName) {
 }
 
 FSDIR* fsOpenDir(const char *folderName) {
-     
+     printf("fsOpenDir(), enter with folderName =%s\n",folderName);
+     setRpcInformation(folderName);
      char *dirName = malloc(strlen(folderName)-folderNameSize);
-    
-     strcpy(dirName,(char *)(folderName+folderNameSize));
+     //printf("foldernamesize=%i   folderNameSize=%i\n",strlen(folderName),folderNameSize);   
+     strcpy(dirName,(folderName+folderNameSize));
           
      printf("new directory name is %s, the folderNameSize = %i \n",dirName,folderNameSize);
      return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsOpenDir",1,strlen(folderName)+1, dirName);
@@ -258,6 +265,20 @@ struct fsDirent *fsReadDir(FSDIR *folder) {
     struct fsDirent *return_val;
     return_val  = (struct fsDirent *)(ans.return_val);
     
+    //int return_val = (*(int *)(ans.return_val));
+    //printf("readDir(),  return ent value = %i \n",return_val); 
+    /*
+    char* buf = malloc(sizeof(ans.return_size));
+    memcpy(buf,(char *)(ans.return_val));
+   
+    char* buf_ptr = buf;
+    
+    // getSizeOfEntityVal
+    int entityNameSize;
+    memcpy(&entityNameSize, buf_ptr, sizeof(int));
+    
+    char *entityName = 
+    */
     if (return_val == NULL ){
         printf("fsReadDir(), error or end of folder found\n");
         

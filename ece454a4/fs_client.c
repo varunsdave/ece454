@@ -36,25 +36,30 @@ int main(int argc, char *argv[]) {
 	exit(1);
     }
 
-    printf ("enter main fs_client \n");
+    printf ("\n\n\n\n\nenter main fs_client \n");
 
     char *dirname = argv[3];
     printf("fsMount(): %d\n", fsMount(argv[1], atoi(argv[2]), dirname));
 
+   printf("fsMount(): - call 2 %d\n", fsMount(argv[1],atoi(argv[2]), "sampleFolderAlias"));
+     
+   // printf("fsUnmount(): sampleFolderAlia\n",fsUnmount("sampleFolderAlias"));
+    
+   //printf("fsMount(): - call 2 %d\n", fsMount(argv[1],atoi(argv[2]), "sampleFolderAlias"));
     FSDIR *fd = fsOpenDir(dirname);
     printf("client app, returned fd-> num is: %i\n",fd->num) ;
     if(fd == NULL) {
 	perror("fsOpenDir"); exit(1);
     }
     printf ("successfully opened dir with id of FSDIR: %i \n",fd->num);
-   // int closeCheck = fsCloseDir(fd);
-  //  if (closeCheck == 0){
-  //      printf("successfully closed dir\n");
-  //  }
-  //  else {
-   //    printf("close dir failed \n");
-   // }
-    //return 0;
+  
+    FSDIR *fd2 = fsOpenDir("sampleFolderAlias/apples");
+    printf("client app, -- testin second open returned fd-> num is: %i\n",fd2->num) ;
+    if(fd2 == NULL) {
+	perror("fsOpenDir"); exit(1);
+    }
+    printf ("successfully opened dir with id of FSDIR: %i \n",fd2->num);
+    
     struct fsDirent *fdent = NULL;
     printf("client app, fd->num is : %i\n",fd->num);
     for(fdent = fsReadDir(fd); fdent != NULL; fdent = fsReadDir(fd)) {
@@ -66,7 +71,18 @@ int main(int argc, char *argv[]) {
     }
 
     printf("fsCloseDir(): %d\n", fsCloseDir(fd));
-    //return 0;
+    struct fsDirent *fdent2 = NULL;
+    printf("client app, fd->num is : %i\n",fd2->num);
+    for(fdent2 = fsReadDir(fd2); fdent2 != NULL; fdent2 = fsReadDir(fd2)) {
+	printf("\t %s, %d\n", fdent2->entName, (int)(fdent2->entType));
+    }
+
+    if(errno != 0) {
+	perror("fsReadDir");
+    }
+
+    printf("fsCloseDir(): %d\n", fsCloseDir(fd2));
+    /*//return 0;
     int ff = open("/dev/urandom", 0);
     if(ff < 0) {
 	perror("open(/dev/urandom)"); exit(1);
@@ -136,6 +152,6 @@ int main(int argc, char *argv[]) {
     if(fsUnmount(dirname) < 0) {
 	perror("fsUnmount"); exit(1);
     }
-
+*/
     return 0;
 }

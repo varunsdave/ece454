@@ -346,9 +346,9 @@ return_type fsReadDir(const int nparams, arg_type* a) {
     }
 
     memcpy(&(dent->entName), &(d->d_name), 256);
-
     r.return_val = dent;
-    r.return_size = sizeof(dent);
+    
+    r.return_size = sizeof(*dent);
     printf("exiting fsReadDir \n");
 
     return r;
