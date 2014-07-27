@@ -197,7 +197,7 @@ int fsUnmount(const char *localFolderName) {
 
 FSDIR* fsOpenDir(const char *folderName) {
      
-     char *dirName[strlen(folderName)-folderNameSize];
+     char *dirName = malloc(strlen(folderName)-folderNameSize);
     
      strcpy(dirName,(char *)(folderName+folderNameSize));
           
@@ -273,7 +273,7 @@ int fsOpen(const char *fname, int mode) {
     
     printf("fsOpen(), entering client call function \n");
     int return_val = 0;    
-    char *dirName[strlen(fname)-folderNameSize];
+    char *dirName = malloc (strlen(fname)-folderNameSize);
     strcpy(dirName, (char *)(fname+folderNameSize+1));
     do {
     return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsOpen",2,strlen(fname)+1,dirName, sizeof(int),(void *)(&mode));
@@ -356,12 +356,20 @@ int fsWrite(int fd, const void *buf, const unsigned int count) {
 
 int fsRemove(const char *name) {
 
-    char *dirName[strlen(name)-folderNameSize];
+    char *dirName = malloc(strlen(name)-folderNameSize);
     strcpy(dirName, (char *)(name+folderNameSize+1));
+    int return_val = 0;
+    do{
     return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsRemove",1,strlen(name)+1, dirName);
 
-   int return_val = (*(int *)(ans.return_val));
-   
+    return_val = (*(int *)(ans.return_val));
+     if (return_val == -2){
+          sleep(1);
+      }
+    }
+    while(
+       return_val = -2
+    );
 //   int local_remove = remove(name);
 
    if (return_val != -1){
