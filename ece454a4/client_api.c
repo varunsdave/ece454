@@ -280,7 +280,7 @@ int fsOpen(const char *fname, int mode) {
     
     // return open file structure signatue
      return_val =  (*(int *)(ans.return_val));
-     sleep(1);
+     if(return_val == -2){sleep(1);}
     } while (
        return_val == -2
     );
@@ -355,24 +355,25 @@ int fsWrite(int fd, const void *buf, const unsigned int count) {
 }
 
 int fsRemove(const char *name) {
-
+    printf("fsRemove(), enter with name %s\n",name);
     char *dirName = malloc(strlen(name)-folderNameSize);
     strcpy(dirName, (char *)(name+folderNameSize+1));
     int return_val = 0;
     do{
+    printf("sending remove request\n");
     return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsRemove",1,strlen(name)+1, dirName);
 
     return_val = (*(int *)(ans.return_val));
-     if (return_val == -2){
+    if (return_val == -2){
           sleep(1);
-      }
+     }
     }
     while(
-       return_val = -2
+       return_val == -2
     );
 //   int local_remove = remove(name);
 
-   if (return_val != -1){
+   if (return_val == 0){
        return return_val;
    }
    else {
