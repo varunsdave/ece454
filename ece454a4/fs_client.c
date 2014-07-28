@@ -47,14 +47,14 @@ int main(int argc, char *argv[]) {
     
    //printf("fsMount(): - call 2 %d\n", fsMount(argv[1],atoi(argv[2]), "sampleFolderAlias"));
     FSDIR *fd = fsOpenDir(dirname);
-    printf("client app, returned fd-> num is: %i\n",fd->num) ;
+    //printf("client app, returned fd-> num is: %i\n",fd->num) ;
     if(fd == NULL) {
 	perror("fsOpenDir"); exit(1);
     }
     printf ("successfully opened dir with id of FSDIR: %i \n",fd->num);
   
     FSDIR *fd2 = fsOpenDir("sampleFolderAlias/apples");
-    printf("client app, -- testin second open returned fd-> num is: %i\n",fd2->num) ;
+    //printf("client app, -- testin second open returned fd-> num is: %i\n",fd2->num) ;
     if(fd2 == NULL) {
 	perror("fsOpenDir"); exit(1);
     }

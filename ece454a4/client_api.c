@@ -216,6 +216,7 @@ FSDIR* fsOpenDir(const char *folderName) {
      //int return_val = (*(int *)(ans.return_val));
      int return_size = (int)(ans.return_size);
      if (return_size == 0){
+        printf("fsOpenDir(), return size is null \n");
         return NULL;
      }
      //int return_val = 1;
