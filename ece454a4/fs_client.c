@@ -82,6 +82,8 @@ int main(int argc, char *argv[]) {
     }
 
     printf("fsCloseDir(): %d\n", fsCloseDir(fd2));
+    printf("fsUnmount(): sampleFolderAlia\n",fsUnmount("sampleFolderAlias"));
+    printf("fsUnmount(): %s\n",dirname,fsUnmount(dirname));    
     /*//return 0;
     int ff = open("/dev/urandom", 0);
     if(ff < 0) {
