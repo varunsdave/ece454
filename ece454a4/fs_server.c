@@ -176,7 +176,7 @@ DIR* get_dir_from_fsdir_num(int num) {
         //printf("temp poitner created and the num is: %i \n", temp->num);
         if (fsdir_p->fsdir->num == num) {
             d = fsdir_p->fsdir->dir;
-            printf("found the D \n");
+            //printf("found the D \n");
             break;
         }
 

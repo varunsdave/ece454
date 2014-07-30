@@ -114,24 +114,27 @@ struct mounted_server_list *findEntry (char *localFolderName){
    entry = mounted_server_head;
    char *buf = malloc(256);
    while(entry != NULL){
-      printf("localFolderName=%s  and comparign value is %s and next value is \n",localFolderName,entry->localFolder);
+     // printf("localFolderName=%s  and comparign value is %s and next value is \n",localFolderName,entry->localFolder);
       strcpy(buf,entry->localFolder);
       int i;
       int compareResul =0;
       for (i=0; i<=entry->folderNameSize; i++){
+        //  printf("\t\t printing ith characters of localeNTRY %c and %c of serverEntry\n",localFolderName[i],buf[i]);
           char *sC= buf[i];
           char *sL = localFolderName[i];
           //printf("\t compared value = %i\n",strcmp(&sC,&sL));
-          if (i == entry->folderNameSize && sL!= NULL){
+          if (i == entry->folderNameSize && sL != NULL){
              char *nC = '/';
              printf("\t %c- %c\n",nC,sL);
-              
+             
+          //   if (strcmp(&localFolderName[i],&nC)!=0){
              if (strcmp(&sL,&nC) !=0){
                 compareResul = 1;
              } 
           }
           else{
-              if (strcmp(&sC,&sL) != 0){ 
+              if (strncmp(&buf[i],&localFolderName[i],1) != 0){
+             // if (strcmp(&sC,&sL) != 0){ 
               //printf("%c %c\t",sC, sL);
                 compareResul = 1;
                }
@@ -140,19 +143,20 @@ struct mounted_server_list *findEntry (char *localFolderName){
       
       //int compareResult = strncmp(localFolderName,entry->localFolder,(entry->localFolder)+1);
       if (compareResul == 0  ){
-         printf ("\t\t found matched %s with %s\n",localFolderName,entry->localFolder);
+         //printf ("\t\t found matched %s with %s\n",localFolderName,entry->localFolder);
          return entry;
       }
       entry = entry->next;
    }
    printf("findEntry(), %s not fount\n",localFolderName); 
+   
    return NULL;
 }
 
 void setRpcInformation (char *localFolderName){
    struct mounted_server_list *entry = malloc(sizeof(struct mounted_server_list));
    entry  = findEntry(localFolderName);
-    
+   if (entry == NULL){exit(1);} 
    serverIpOrDomainName = entry->serverIpOrDomainName;
    serverPort = entry->serverPort;
    localFolderName = entry->localFolder;

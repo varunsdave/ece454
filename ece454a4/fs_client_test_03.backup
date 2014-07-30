@@ -98,48 +98,6 @@ int main(int argc, char *argv[]) {
 	perror("fsReadDir");
     }
 
-
-    // part to test open close and write
-
-    int ff = open("/dev/urandom", 0);
-    if(ff < 0) {
-        perror("open(/dev/urandom)"); exit(1);
-    }
-    else printf("open(): %d\n", ff);
-    //return 0;
-    char fname[256];
-    sprintf(fname, "%s/", dirname);
-    if(read(ff, (void *)(fname+strlen(dirname)+1), 10) < 0) {
-        perror("read(/dev/urandom)"); exit(1);
-    }
-
-    int i;
-    for(i = 0; i < 10; i++) {
-        //printf("%d\n", ((unsigned char)(fname[i]))%26);
-        fname[i+strlen(dirname)+1] = ((unsigned char)(fname[i+strlen(dirname)+1]))%26 + 'a';
-    }
-    fname[10+strlen(dirname)+1] = (char)0;
-    printf("Filename to write: %s\n", (char *)fname);
- char buf[256];
-    if(read(ff, (void *)buf, 256) < 0) {
-        perror("read(2)"); exit(1);
-    }
-
-    printBuf(buf, 256);
-
-    printf("close(): %d\n", close(ff));
-    int ctr;
-//    for (ctr =0; ctr < 100;ctr++){
-    ff = fsOpen("folderAlias/apples/01.txt", 1);
-    if(ff < 0) {
-        perror("fsOpen(write)"); exit(1);
-    }
-    //sleep(10); // sleep for 5 minutes
-
-    if(fsClose(ff) < 0) {
-        perror("fsClose return is < 0"); exit(1);
-    }
-
     printf("fsCloseDir(): %d\n", fsCloseDir(fd3));
     printf("fsUnmount(): folderAlias %i\n",fsUnmount("folderAlias"));
     printf("fsUnmount(): ../exFolder/ %i\n",fsUnmount("../exFolder"));
@@ -148,6 +106,6 @@ int main(int argc, char *argv[]) {
     //return 0;
 //*/
     
-    printf ("\n\n successfully exit fs_client \n. ***********\n test case involves mounting  3 server alias, opendir 3 aliases  and unmount 3 server alias \n open 02.txt in apples folder without sleep. \n");
+    printf ("\n\n successfully exit fs_client \n. ***********\n test case involves mounting  3 server alias, opendir 3 aliases  and unmount 3 server alias \n");
     return 0;
 }

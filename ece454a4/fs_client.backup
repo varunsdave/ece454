@@ -36,13 +36,16 @@ int main(int argc, char *argv[]) {
 	exit(1);
     }
 
-    printf ("\n\n\n\nenter main fs_client \n. ***********\n test case involves mounting  3 server alias, opendir 3 aliases  and unmount 3 server alias \n");
+    printf ("\n\n\n\n\nenter main fs_client \n");
 
     char *dirname = argv[3];
     printf("fsMount(): %d\n", fsMount(argv[1], atoi(argv[2]), dirname));
-    printf("fsMount(): - folderAlsia %d\n", fsMount(argv[1],atoi(argv[2]), "folderAlias"));
-    printf("fsMount(): - ../exFolder %d\n", fsMount(argv[1],atoi(argv[2]), "../exFolder"));
+
+   printf("fsMount(): - call 2 %d\n", fsMount(argv[1],atoi(argv[2]), "folderAlias"));
+     
+   // printf("fsUnmount(): sampleFolderAlia\n",fsUnmount("sampleFolderAlias"));
     
+   //printf("fsMount(): - call 2 %d\n", fsMount(argv[1],atoi(argv[2]), "sampleFolderAlias"));
     FSDIR *fd = fsOpenDir(dirname);
     //printf("client app, returned fd-> num is: %i\n",fd->num) ;
     if(fd == NULL) {
@@ -56,14 +59,6 @@ int main(int argc, char *argv[]) {
 	perror("fsOpenDir For second failed"); exit(1);
     }
     printf ("successfully opened dir with id of FSDIR: %i \n",fd2->num);
-   
-    FSDIR *fd3 = fsOpenDir("../exFolder/apples/bananas/");
-    if(fd3 == NULL) {
-         perror("fsOpenDir exFolder/apples/bananas failed \n");exit(1);
-    }
-    printf ("successfully oepened bananas dir with id of FSDIR : %i \n",fd3->num);
-
-
     printf ("\t now checking fsDirent part\n");
     struct fsDirent *fdent = NULL;
     printf("client app, fd->num is : %i\n",fd->num);
@@ -77,7 +72,7 @@ int main(int argc, char *argv[]) {
 
     printf("fsCloseDir(): %d\n", fsCloseDir(fd));
     struct fsDirent *fdent2 = NULL;
-    printf("client app, fd2->num is : %i\n",fd2->num);
+    printf("client app, fd->num is : %i\n",fd2->num);
     for(fdent2 = fsReadDir(fd2); fdent2 != NULL; fdent2 = fsReadDir(fd2)) {
 	printf("\t %s, %d\n", fdent2->entName, (int)(fdent2->entType));
     }
@@ -87,67 +82,84 @@ int main(int argc, char *argv[]) {
     }
 
     printf("fsCloseDir(): %d\n", fsCloseDir(fd2));
-    
-    struct fsDirent *fdent3 = NULL;
-    printf("client app, fd3->num is : %i\n",fd3->num);
-    for(fdent3 = fsReadDir(fd3); fdent3 != NULL; fdent3 = fsReadDir(fd3)) {
-	printf("\t %s, %d\n", fdent3->entName, (int)(fdent3->entType));
-    }
-
-    if(errno != 0) {
-	perror("fsReadDir");
-    }
-
-
-    // part to test open close and write
-
+    printf("fsUnmount(): folderAlias\n",fsUnmount("folderAlias"));
+    //printf("fsUnmount(): %s\n",dirname,fsUnmount(dirname));    
+    //return 0;
     int ff = open("/dev/urandom", 0);
     if(ff < 0) {
-        perror("open(/dev/urandom)"); exit(1);
+	perror("open(/dev/urandom)"); exit(1);
     }
     else printf("open(): %d\n", ff);
     //return 0;
     char fname[256];
     sprintf(fname, "%s/", dirname);
     if(read(ff, (void *)(fname+strlen(dirname)+1), 10) < 0) {
-        perror("read(/dev/urandom)"); exit(1);
+	perror("read(/dev/urandom)"); exit(1);
     }
 
     int i;
     for(i = 0; i < 10; i++) {
-        //printf("%d\n", ((unsigned char)(fname[i]))%26);
-        fname[i+strlen(dirname)+1] = ((unsigned char)(fname[i+strlen(dirname)+1]))%26 + 'a';
+	//printf("%d\n", ((unsigned char)(fname[i]))%26);
+	fname[i+strlen(dirname)+1] = ((unsigned char)(fname[i+strlen(dirname)+1]))%26 + 'a';
     }
     fname[10+strlen(dirname)+1] = (char)0;
     printf("Filename to write: %s\n", (char *)fname);
- char buf[256];
+
+    char buf[256];
     if(read(ff, (void *)buf, 256) < 0) {
-        perror("read(2)"); exit(1);
+	perror("read(2)"); exit(1);
     }
 
     printBuf(buf, 256);
 
     printf("close(): %d\n", close(ff));
     int ctr;
-//    for (ctr =0; ctr < 100;ctr++){
-    ff = fsOpen("folderAlias/apples/01.txt", 1);
+//    for (ctr =0; ctr < 100;ctr++){ 
+    ff = fsOpen("sample/apples/01.txt", 1);
     if(ff < 0) {
-        perror("fsOpen(write)"); exit(1);
+	perror("fsOpen(write)"); exit(1);
     }
-    //sleep(10); // sleep for 5 minutes
+    //sleep(30);
 
     if(fsClose(ff) < 0) {
-        perror("fsClose return is < 0"); exit(1);
+	perror("fsClose"); exit(1);
+    }
+    return 0;
+    if(fsWrite(ff, buf, 256) < 256) {
+	fprintf(stderr, "fsWrite() wrote fewer than 256\n");
+    }
+    //return 0;
+    if(fsClose(ff) < 0) {
+	perror("fsClose"); exit(1);
+    }
+    //return 0;
+    char readbuf[256];
+    if((ff = fsOpen(fname, 0)) < 0) {
+	perror("fsOpen(read)"); exit(1);
     }
 
-    printf("fsCloseDir(): %d\n", fsCloseDir(fd3));
-    printf("fsUnmount(): folderAlias %i\n",fsUnmount("folderAlias"));
-    printf("fsUnmount(): ../exFolder/ %i\n",fsUnmount("../exFolder"));
-   printf("fsUnmount(): dirFolder entered %i \n",fsUnmount(dirname));
-    //printf("fsUnmount(): %s\n",dirname,fsUnmount(dirname));    
-    //return 0;
+    int readcount = -1;
+
+    if((readcount = fsRead(ff, readbuf, 256)) < 256) {
+	fprintf(stderr, "fsRead() read fewer than 256\n");
+    }
+
+    if(memcmp(readbuf, buf, readcount)) {
+	fprintf(stderr, "return buf from fsRead() differs from data written!\n");
+    }
+    else {
+	printf("fsread(): return buf identical to data written upto %d bytes.\n", readcount);
+    }
+
+    if(fsClose(ff) < 0) {
+	perror("fsClose"); exit(1);
+    }
+   // return 0;
+    printf("fsRemove(%s): %d\n", fname, fsRemove(fname));
+
+    if(fsUnmount(dirname) < 0) {
+	perror("fsUnmount"); exit(1);
+    }
 //*/
-    
-    printf ("\n\n successfully exit fs_client \n. ***********\n test case involves mounting  3 server alias, opendir 3 aliases  and unmount 3 server alias \n open 02.txt in apples folder without sleep. \n");
     return 0;
 }
