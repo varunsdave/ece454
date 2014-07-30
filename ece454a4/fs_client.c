@@ -130,7 +130,7 @@ int main(int argc, char *argv[]) {
     printf("close(): %d\n", close(ff));
     int ctr;
 //    for (ctr =0; ctr < 100;ctr++){
-    ff = fsOpen("folderAlias/apples/01.txt", 1);
+    ff = fsOpen("../exFolder/apples/01.txt", 1);
     if(ff < 0) {
         perror("fsOpen(write)"); exit(1);
     }
@@ -146,7 +146,7 @@ int main(int argc, char *argv[]) {
     //sleep(60);
     //return 0;
     char readbuf[256];
-    if((ff = fsOpen("folderAlias/apples/01.txt", 0)) < 0) {
+    if((ff = fsOpen("../exFolder/apples/01.txt", 0)) < 0) {
         perror("fsOpen(read)"); exit(1);
     }
 
@@ -175,6 +175,6 @@ int main(int argc, char *argv[]) {
     //return 0;
 //*/
     
-    printf ("\n\n successfully exit fs_client test 0_08 \n. ***********\n test case involves mounting  3 server alias, opendir 3 aliases  and unmount 3 server alias \n open 01.txt in apples folder without sleep. write to it and then read from it after\n");
+    printf ("\n\n successfully exit fs_client test 0_09 \n. ***********\n test case involves mounting  3 server alias, opendir 3 aliases  and unmount 3 server alias \n open 01.txt in apples folder without sleep. write to it and then read from it after\n");
     return 0;
 }
