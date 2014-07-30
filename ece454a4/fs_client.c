@@ -134,7 +134,34 @@ int main(int argc, char *argv[]) {
     if(ff < 0) {
         perror("fsOpen(write)"); exit(1);
     }
-    //sleep(10); // sleep for 5 minutes
+    
+ if(fsWrite(ff, buf, 256) < 256) {
+        fprintf(stderr, "fsWrite() wrote fewer than 256\n");
+    }
+    //return 0;
+    if(fsClose(ff) < 0) {
+        perror("fsClose"); exit(1);
+    }
+
+    //sleep(60);
+    //return 0;
+    char readbuf[256];
+    if((ff = fsOpen("folderAlias/apples/01.txt", 0)) < 0) {
+        perror("fsOpen(read)"); exit(1);
+    }
+
+    int readcount = -1;
+
+    if((readcount = fsRead(ff, readbuf, 256)) < 256) {
+        fprintf(stderr, "fsRead() read fewer than 256\n");
+    }
+
+    if(memcmp(readbuf, buf, readcount)) {
+        fprintf(stderr, "return buf from fsRead() differs from data written!\n");
+    }
+    else {
+        printf("fsread(): return buf identical to data written upto %d bytes.\n", readcount);
+    }
 
     if(fsClose(ff) < 0) {
         perror("fsClose return is < 0"); exit(1);
@@ -148,6 +175,6 @@ int main(int argc, char *argv[]) {
     //return 0;
 //*/
     
-    printf ("\n\n successfully exit fs_client \n. ***********\n test case involves mounting  3 server alias, opendir 3 aliases  and unmount 3 server alias \n open 02.txt in apples folder without sleep. \n");
+    printf ("\n\n successfully exit fs_client test 0_08 \n. ***********\n test case involves mounting  3 server alias, opendir 3 aliases  and unmount 3 server alias \n open 01.txt in apples folder without sleep. write to it and then read from it after\n");
     return 0;
 }
