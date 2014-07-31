@@ -410,9 +410,9 @@ return_type fsClose(const int nparams, arg_type* a) {
         r.return_size = 0;
         return r;
     }
-
+   
     int fd = *(int *)a->arg_val;
-
+    printf("closing fd %i\n",fd);
     delete_open_file(fd);
 
     int *return_val = malloc(sizeof(int));
