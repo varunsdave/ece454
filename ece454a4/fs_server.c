@@ -313,7 +313,7 @@ return_type fsCloseDir(const int nparams, arg_type* a) {
     int return_errno = errno;
 
     r.return_val = return_val;
-    r.return_size = sizeof(return_val);
+    r.return_size = sizeof(int);
     r.return_errno = return_errno;
 
     return r;
@@ -344,7 +344,7 @@ return_type fsReadDir(const int nparams, arg_type* a) {
         //if(errno == initErrno) errno = 0;
         r.return_val = NULL;
         r.return_size = 0;
-        r.return_errno = ENOENT;
+        r.return_errno = return_errno;
         return r;
     }
 
