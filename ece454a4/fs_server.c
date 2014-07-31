@@ -201,6 +201,7 @@ return_type fsMount(const int nparams, arg_type* a) {
         // error
         r.return_val = NULL;
         r.return_size = 0;
+        r.return_errno = EINVAL;
         return r;
     }
 
@@ -208,6 +209,7 @@ return_type fsMount(const int nparams, arg_type* a) {
         // error
         r.return_val = NULL;
         r.return_size = 0;
+        r.return_errno = EINVAL;
         return r;
     }
 
@@ -216,6 +218,7 @@ return_type fsMount(const int nparams, arg_type* a) {
 
     r.return_val = ret_val;
     r.return_size = sizeof(int);
+    r.return_errno = 0;
 
     return r;
 }
@@ -225,6 +228,7 @@ return_type fsUnmount(const int nparams, arg_type* a) {
         // error
         r.return_val = NULL;
         r.return_size = 0;
+        r.return_errno = EINVAL;
         return r;
     }
 
@@ -232,6 +236,7 @@ return_type fsUnmount(const int nparams, arg_type* a) {
         // error
         r.return_val = NULL;
         r.return_size = 0;
+        r.return_errno = EINVAL;
         return r;
     }
 
@@ -240,6 +245,7 @@ return_type fsUnmount(const int nparams, arg_type* a) {
 
     r.return_val = ret_val;
     r.return_size = sizeof(int);
+    r.return_errno = 0;
 
     return r;
 
@@ -250,6 +256,7 @@ return_type fsOpenDir(const int nparams, arg_type* a) {
         // error
         r.return_val = NULL;
         r.return_size = 0;
+        r.return_errno = EINVAL;
         return r;
     }
 
@@ -264,11 +271,13 @@ return_type fsOpenDir(const int nparams, arg_type* a) {
 
     DIR *dir;
     dir = opendir(full_path);
+    int return_errno = errno;
 
     if (dir == NULL) {
         // error
         r.return_val = NULL;
         r.return_size = 0;
+        r.return_errno = ENOENT;
         return r;
     }
 
@@ -284,6 +293,7 @@ return_type fsOpenDir(const int nparams, arg_type* a) {
     *fsdirNumVal = fsdir->num;
     r.return_val = fsdirNumVal;
     r.return_size = sizeof(int);
+    r.return_errno = return_errno;
 
     return r;
 }
@@ -293,6 +303,7 @@ return_type fsCloseDir(const int nparams, arg_type* a) {
         // error
         r.return_val = NULL;
         r.return_size = 0;
+        r.return_errno = EINVAL;
         return r;
     }
 
@@ -302,9 +313,11 @@ return_type fsCloseDir(const int nparams, arg_type* a) {
     int* return_val = malloc(sizeof(int));
 
     *return_val = close_fsdir(fsdir);
+    int return_errno = errno;
 
     r.return_val = return_val;
     r.return_size = sizeof(return_val);
+    r.return_errno = return_errno;
 
     return r;
 }
@@ -314,6 +327,7 @@ return_type fsReadDir(const int nparams, arg_type* a) {
         // error
         r.return_val = NULL;
         r.return_size = 0;
+        r.return_errno = EINVAL;
         return r;
     }
 
@@ -327,11 +341,13 @@ return_type fsReadDir(const int nparams, arg_type* a) {
 
     //const int initErrno = errno;
     struct dirent *d = readdir(dir);
+    int return_errno = errno;
 
     if(d == NULL) {
         //if(errno == initErrno) errno = 0;
         r.return_val = NULL;
         r.return_size = 0;
+        r.return_errno = ENOENT;
         return r;
     }
 
@@ -349,6 +365,7 @@ return_type fsReadDir(const int nparams, arg_type* a) {
     r.return_val = dent;
     
     r.return_size = sizeof(*dent);
+    r.return_errno = return_errno;
     printf("exiting fsReadDir \n");
 
     return r;
@@ -360,6 +377,7 @@ return_type fsOpen(const int nparams, arg_type* a) {
         // error
         r.return_val = NULL;
         r.return_size = 0;
+        r.return_errno = EINVAL;
         return r;
     }
 
@@ -376,6 +394,7 @@ return_type fsOpen(const int nparams, arg_type* a) {
         *return_val = -2;
         r.return_val = return_val;
         r.return_size = sizeof(int);
+        r.return_errno = EAGAIN;
         return r;
     }
 
@@ -389,9 +408,8 @@ return_type fsOpen(const int nparams, arg_type* a) {
     }
 
     printf("opening :%s \n", full_path);
-    int *return_errno = malloc(sizeof(int));
     int fd = open(full_path, flags, S_IRWXU);
-    *return_errno = errno;
+    int return_errno = errno;
     int* return_val = malloc(sizeof(int));
     *return_val = fd;
 
@@ -411,6 +429,7 @@ return_type fsClose(const int nparams, arg_type* a) {
         // error
         r.return_val = NULL;
         r.return_size = 0;
+        r.return_errno = EINVAL;
         return r;
     }
    
@@ -420,9 +439,11 @@ return_type fsClose(const int nparams, arg_type* a) {
 
     int *return_val = malloc(sizeof(int));
     *return_val =  close(fd);
+    int return_errno = errno;
 
     r.return_val = return_val;
     r.return_size = sizeof(int);
+    r.return_errno = return_errno;
 
     return r;
 }
@@ -432,6 +453,7 @@ return_type fsRead(const int nparams, arg_type* a) {
         // error
         r.return_val = NULL;
         r.return_size = 0;
+        r.return_errno = EINVAL;
         return r;
     }
 
@@ -441,9 +463,11 @@ return_type fsRead(const int nparams, arg_type* a) {
 
     int *return_val = malloc(sizeof(int));
     *return_val = read(fd,buf,(size_t)count);
+    int return_errno = errno;
     
     r.return_val = buf;
     r.return_size = count;
+    r.return_errno = return_errno;
     printf("%i \n", r.return_size);
     printBuf(buf,r.return_size);
     return r;
@@ -454,6 +478,7 @@ return_type fsWrite(const int nparams, arg_type* a) {
         // error
         r.return_val = NULL;
         r.return_size = 0;
+        r.return_errno = EINVAL;
         return r;
     }
     printf("fsWrite(), entering");
@@ -466,9 +491,11 @@ return_type fsWrite(const int nparams, arg_type* a) {
     printBuf(buf,count);
     int *return_val = malloc(sizeof(int));
     *return_val =  write(fd,buf,(size_t)count);
+    int return_errno = errno;
     //write(fd, buf, (size_t)count);
     r.return_val = return_val;
     r.return_size = sizeof(int);
+    r.return_errno = return_errno;
     return r;
 }
 
@@ -477,6 +504,7 @@ return_type fsRemove(const int nparams, arg_type* a) {
         // error
         r.return_val = NULL;
         r.return_size = 0;
+        r.return_errno = EINVAL;
         return r;
     }
 
@@ -493,14 +521,17 @@ return_type fsRemove(const int nparams, arg_type* a) {
         *return_val = -2;
         r.return_val = return_val;
         r.return_size = sizeof(int);
+        r.return_errno = EAGAIN;
         return r;
     }
 
     int* return_val = malloc(sizeof(int));
     *return_val = remove(full_path);
+    int return_errno = errno;
 
     r.return_val = return_val;
     r.return_size = sizeof(return_val);
+    r.return_errno = return_errno;
 
     return r;
 }
