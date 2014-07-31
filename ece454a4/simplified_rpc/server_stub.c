@@ -201,7 +201,9 @@ void returnResult(int s, return_type *ret) {
 
     /* else */
     sendbytes(s, (void *)(&(ret->return_size)), sizeof(int));
+    sendbytes(s, (void *)(&(ret->return_errno)),sizeof(int));
     sendbytes(s, ret->return_val, ret->return_size);
+    
 }
 
 void freeArgs(arg_type *a) {
