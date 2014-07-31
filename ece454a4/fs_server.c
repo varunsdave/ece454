@@ -369,7 +369,7 @@ return_type fsReadDir(const int nparams, arg_type* a) {
 }
 
 return_type fsOpen(const int nparams, arg_type* a) {
-    printf("entered open \n");
+    //printf("entered open \n");
     if (nparams != 2) {
         // error
         r.return_val = NULL;
