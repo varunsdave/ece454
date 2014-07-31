@@ -20,7 +20,6 @@ struct fsDirent dent;
 
 const char *serverIpOrDomainName;
 unsigned int serverPort;
-const char *localFolder;
 int folderNameSize;
 
 struct mounted_server_list {
@@ -58,7 +57,7 @@ void addServerList(char *srvIpOrDomName, int srvPort, char *localFolderName, int
 
 }
 
-void removeServerEntry(char *localFolderName){
+void removeServerEntry(const char *localFolderName){
 
     struct mounted_server_list *entry;
     struct mounted_server_list *prev_entry;
@@ -107,7 +106,7 @@ void removeServerEntry(char *localFolderName){
     
 }
 
-struct mounted_server_list *findEntry (char *localFolderName){
+struct mounted_server_list *findEntry (const char *localFolderName){
    struct mounted_server_list *entry;
    entry = malloc(sizeof(struct mounted_server_list));
    
@@ -118,22 +117,20 @@ struct mounted_server_list *findEntry (char *localFolderName){
       strcpy(buf,entry->localFolder);
       int i;
       int compareResul =0;
+      printf("comparing localFolderName %s , entry %s \n", localFolderName, buf);
       for (i=0; i<=entry->folderNameSize; i++){
         //  printf("\t\t printing ith characters of localeNTRY %c and %c of serverEntry\n",localFolderName[i],buf[i]);
-          char *sC= buf[i];
-          char *sL = localFolderName[i];
-          //printf("\t compared value = %i\n",strcmp(&sC,&sL));
-          if (i == entry->folderNameSize && sL != NULL){
-             char *nC = '/';
-             printf("\t %c- %c\n",nC,sL);
+          char sL = localFolderName[i];
+          if (i == entry->folderNameSize && sL != '\0'){
+             char nC = '/';
              
           //   if (strcmp(&localFolderName[i],&nC)!=0){
-             if (strcmp(&sL,&nC) !=0){
+             if (sL != nC){
                 compareResul = 1;
              } 
           }
           else{
-              if (strncmp(&buf[i],&localFolderName[i],1) != 0){
+              if (buf[i] != localFolderName[i]){
              // if (strcmp(&sC,&sL) != 0){ 
               //printf("%c %c\t",sC, sL);
                 compareResul = 1;
@@ -153,13 +150,13 @@ struct mounted_server_list *findEntry (char *localFolderName){
    return NULL;
 }
 
-void setRpcInformation (char *localFolderName){
+void setRpcInformation (const char *localFolderName){
    struct mounted_server_list *entry = malloc(sizeof(struct mounted_server_list));
    entry  = findEntry(localFolderName);
    if (entry == NULL){exit(1);} 
    serverIpOrDomainName = entry->serverIpOrDomainName;
    serverPort = entry->serverPort;
-   localFolderName = entry->localFolder;
+   //localFolder = entry->localFolder;
    folderNameSize = entry->folderNameSize; 
 }
 
@@ -185,14 +182,14 @@ int fsMount(const char *srvIpOrDomName, const unsigned int srvPort, const char *
 
     serverIpOrDomainName = srvIpOrDomName;
     serverPort = srvPort;
-    localFolder = localFolderName;    
+    //localFolder = localFolderName;    
     int folderSize = strlen(localFolderName);
     printf("foldernamesize: %i\n",strlen(localFolderName));
     //printServerList();
     addServerList((char *)srvIpOrDomName,srvPort,(char *)localFolderName, folderSize);  
     //printServerList();
     //printf("call rpc info next\n");  
-     setRpcInformation(localFolderName);
+     //setRpcInformation(localFolderName);
     //printf("exit rpc info\n");
     //removeServerEntry((char *)localFolderName);
 
@@ -322,7 +319,7 @@ struct fsDirent *fsReadDir(FSDIR *folder) {
 int fsOpen(const char *fname, int mode) {
     
     int return_val = 0;    
-    setRpcInformation((char *)fname);
+    setRpcInformation(fname);
     char *dirName = malloc (strlen(fname)-folderNameSize);
     strcpy(dirName, (char *)(fname+folderNameSize+1));
     
