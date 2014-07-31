@@ -172,41 +172,31 @@ void printServerList(){
    }
    
    //free(list_entry);
-   printf("printServerList(), exit\n");
+  // printf("printServerList(), exit\n");
 }
 
 int fsMount(const char *srvIpOrDomName, const unsigned int srvPort, const char *localFolderName) {
 
     struct stat sbuf;
-    int mountErrNo;
 
     serverIpOrDomainName = srvIpOrDomName;
     serverPort = srvPort;
-    //localFolder = localFolderName;    
     int folderSize = strlen(localFolderName);
-    printf("foldernamesize: %i\n",strlen(localFolderName));
-    //printServerList();
+//    printf("foldernamesize: %i\n",strlen(localFolderName));
     addServerList((char *)srvIpOrDomName,srvPort,(char *)localFolderName, folderSize);  
-    //printServerList();
-    //printf("call rpc info next\n");  
-     //setRpcInformation(localFolderName);
-    //printf("exit rpc info\n");
-    //removeServerEntry((char *)localFolderName);
 
-//    stat(localFolderName, &sbuf);
     int  dummyCheckSum = 1;
-   // printf("enter fsMount right before rpc call \n");
 
     return_type ans = make_remote_call(serverIpOrDomainName,serverPort, "fsMount", 1, sizeof(int), (void *)(&dummyCheckSum));
     
-    printf("fsMount right after rpc call \n"); 
+  //  printf("fsMount right after rpc call \n"); 
     int return_val = *(int *)(ans.return_val);
-   // printf ("return value generated \n");    
     if (return_val < 0){
-       errno = ENOTDIR;
+       int err = ans.return_errno;
+       errno = err;
        return -1;
     }
-    printf ("return value was correct \n"); 
+  //  printf ("return value was correct \n"); 
     return 0;
 }
 
@@ -219,7 +209,8 @@ int fsUnmount(const char *localFolderName) {
      if (return_val != -1){
         return return_val;}
      else{
-        errno = ENOTDIR;
+       int err = ans.return_errno;
+       errno = err;
 
         return -1;
      }
@@ -280,6 +271,11 @@ int fsCloseDir(FSDIR *folder) {
        return return_val;
     }
     else {
+
+       int err = ans.return_errno;
+       errno = err;
+       //int err = ans.return_errno;
+      // errno = err;
        return -1;
     }
     //return(closedir(folder));
@@ -295,33 +291,17 @@ struct fsDirent *fsReadDir(FSDIR *folder) {
     struct fsDirent *return_val;
     return_val  = (struct fsDirent *)(ans.return_val);
     
-    //int return_val = (*(int *)(ans.return_val));
-    //printf("readDir(),  return ent value = %i \n",return_val); 
-    /*
-    char* buf = malloc(sizeof(ans.return_size));
-    memcpy(buf,(char *)(ans.return_val));
-   
-    char* buf_ptr = buf;
-    
-    // getSizeOfEntityVal
-    int entityNameSize;
-    memcpy(&entityNameSize, buf_ptr, sizeof(int));
-    
-    char *entityName = 
-    */
     if (return_val == NULL ){
         printf("fsReadDir(), error or end of folder found\n");
         
+       int err = ans.return_errno;
+       errno = err;
     }
-    
- 
-
-  //  printf("fsReadDir(), exiting function\n");
     return return_val;;
 }
 
 int fsOpen(const char *fname, int mode) {
-    
+     
     int return_val = 0;    
     setRpcInformation(fname);
     char *dirName = malloc(strlen(fname)-folderNameSize+1);
@@ -331,20 +311,24 @@ int fsOpen(const char *fname, int mode) {
         strcpy(dirName, (char *)(fname+folderNameSize+1));
     }
     
+    return_type ans;    
     printf("fsOpen(), entering client call function,\n\t folderNameSize=%i dirName %s and fname: %s\n",folderNameSize,dirName,fname);
     do {
-    return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsOpen",2,strlen(dirName)+1,dirName, sizeof(int),(void *)(&mode));
+        ans = make_remote_call(serverIpOrDomainName, serverPort,"fsOpen",2,strlen(dirName)+1,dirName, sizeof(int),(void *)(&mode));
     
     // return open file structure signatue
-     return_val =  (*(int *)(ans.return_val));
-     if(return_val == -2){sleep(1);}
-    } while (
-       return_val == -2
-    );
+        return_val =  (*(int *)(ans.return_val));
+     
+        if(return_val == -2){sleep(1);}
+    } while (return_val == -2);
+
     printf("fsOpen(), client, returned value is : %i\n",return_val);
     
     if (return_val == -1){
-       errno = ENOENT;
+       printf("\tfsOpen(), return values is -1 and entered if statent\n");
+       int err =(ans.return_errno);
+       printf("\tfsOpen(), return err value is %i\n",err);
+       errno = err;
        return return_val;
     }
     else {
@@ -355,21 +339,17 @@ int fsOpen(const char *fname, int mode) {
 
 int fsClose(int fd) {
     printf("fsClose(), entering fsClose function with int fd as: %i\n",fd);
-//    close(fd); // close on client side;
     return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsClose",1,sizeof(int),(void *)(& fd));
 
-    
-    //return(close(fd));
-    
-    // return server side fd
-   
     int return_val =  (*(int *)(ans.return_val));
     printf("fsClose(), returned value is: %i\n",return_val);
     if (return_val != -1){
         return return_val;
     }
     else {
-        errno = EMFILE;
+      //  errno = EMFILE;
+       int err = ans.return_errno;
+       errno = err;
         return -1;
     }
 
@@ -387,6 +367,8 @@ int fsRead(int fd, void *buf, const unsigned int count) {
        return return_val;
     }
     else{
+       int err = ans.return_errno;
+       errno = err;
        return -1;
     }
 }
@@ -407,6 +389,8 @@ int fsWrite(int fd, const void *buf, const unsigned int count) {
         return return_val;
     } 
     else {
+       int err = ans.return_errno;
+       errno = err;
         return -1;
     }
 }
@@ -416,9 +400,10 @@ int fsRemove(const char *name) {
     char *dirName = malloc(strlen(name)-folderNameSize);
     strcpy(dirName, (char *)(name+folderNameSize+1));
     int return_val = 0;
+    return_type ans;
     do{
     printf("sending remove request\n");
-    return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsRemove",1,strlen(name)+1, dirName);
+    ans = make_remote_call(serverIpOrDomainName, serverPort,"fsRemove",1,strlen(name)+1, dirName);
 
     return_val = (*(int *)(ans.return_val));
     if (return_val == -2){
@@ -434,7 +419,9 @@ int fsRemove(const char *name) {
        return return_val;
    }
    else {
-       errno = EMFILE;
+       //errno = EMFILE;
+       int err = ans.return_errno;
+       errno = err;
        return -1;
    }
    

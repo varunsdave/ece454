@@ -167,6 +167,7 @@ void makeCall(char *fname, int nparams, arg_type *a, return_type *r) {
     if(tmp == NULL) {
 	r->return_val = NULL;
 	r->return_size = 0;
+        r->return_errno = 0;
     }
     else {
 #ifdef _DEBUG_1_
@@ -178,6 +179,7 @@ void makeCall(char *fname, int nparams, arg_type *a, return_type *r) {
 #endif
 	r->return_size = ret.return_size;
 	r->return_val = ret.return_val;
+        r->return_errno = ret.return_errno;
     }
 
     return;
@@ -191,6 +193,10 @@ void returnResult(int s, return_type *ret) {
     if(ret == NULL || ret->return_size <= 0) {
 	int i = 0;
 	sendbytes(s, &i, sizeof(int));
+        int j = 10;
+        if (ret != NULL){
+        sendbytes(s, (void *)(&(ret->return_errno)), sizeof(int));}
+       
 	return;
     }
 
@@ -201,7 +207,9 @@ void returnResult(int s, return_type *ret) {
 
     /* else */
     sendbytes(s, (void *)(&(ret->return_size)), sizeof(int));
+    sendbytes(s, (void *)(&(ret->return_errno)),sizeof(int));
     sendbytes(s, ret->return_val, ret->return_size);
+    
 }
 
 void freeArgs(arg_type *a) {
@@ -270,7 +278,6 @@ void launch_server() {
 #ifdef _DEBUG_1_
 	printf("launch_server(), after makeCall()\n"); fflush(stdout);
 #endif
-
 	returnResult(asock, &ret);
 
 	free(fname);
