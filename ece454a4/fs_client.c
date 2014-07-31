@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
     for(fdent = fsReadDir(fd); fdent != NULL; fdent = fsReadDir(fd)) {
 	printf("\t %s, %d\n", fdent->entName, (int)(fdent->entType));
     }
-
+    printf ("\t\t read fd->num directory: %i\n",fd->num);
     if(errno != 0) {
 	perror("fsReadDir");
     }
@@ -182,7 +182,7 @@ int main(int argc, char *argv[]) {
     if (fsClose(ff) < 0) { perror("fsClose with value_write file failed");exit(1);}
     errno=0;
     printf("calling directory apples \n");
-    ff =fsOpen("sample/apples/",1);
+    ff =fsOpen("sample/apples",1);
  
     if (errno != 0){
        perror("error opening directory apples fsOpen()");exit(1);

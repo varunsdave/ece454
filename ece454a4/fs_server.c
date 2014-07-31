@@ -262,12 +262,10 @@ return_type fsOpenDir(const int nparams, arg_type* a) {
 
     char* folder = (char *)a->arg_val;
 
-    printf("fsOpenDir(), folder is: %s\n", folder);
     char* full_path = malloc(strlen(base_folder)+strlen(folder)+1+1);
     strcpy(full_path, base_folder);
     strcat(full_path, "/");
     strcat(full_path, folder);
-    printf("fsOpenDir(), the full path is: %s\n", full_path);
 
     DIR *dir;
     dir = opendir(full_path);
@@ -285,7 +283,6 @@ return_type fsOpenDir(const int nparams, arg_type* a) {
     fsdir = malloc(sizeof(FSDIR));
     fsdir_num_counter += 1;
     fsdir->num = fsdir_num_counter;
-    printf("fsdir num assigned to %i\n", fsdir->num);
     fsdir->dir = dir;
     store_fsdir(fsdir);
     
@@ -334,7 +331,7 @@ return_type fsReadDir(const int nparams, arg_type* a) {
     FSDIR fsdir;
     fsdir.num = *(int *)a->arg_val;
 
-    printf("num %i\n", fsdir.num);
+ //   printf("num %i\n", fsdir.num);
     DIR* dir = get_dir_from_fsdir_num(fsdir.num);
 
     struct fsDirent* dent = malloc(sizeof(struct fsDirent));
@@ -366,7 +363,6 @@ return_type fsReadDir(const int nparams, arg_type* a) {
     
     r.return_size = sizeof(*dent);
     r.return_errno = return_errno;
-    printf("exiting fsReadDir \n");
 
     return r;
 }
@@ -407,20 +403,19 @@ return_type fsOpen(const int nparams, arg_type* a) {
         flags = O_WRONLY | O_CREAT | O_TRUNC;
     }
 
-    printf("opening :%s \n", full_path);
     int fd = open(full_path, flags, S_IRWXU);
     int return_errno = errno;
+    
     int* return_val = malloc(sizeof(int));
     *return_val = fd;
 
-    store_open_file(full_path, fd);
-
+    if (fd!=-1){
+      store_open_file(full_path, fd);
+    }
     r.return_val = return_val;
     r.return_size = sizeof(int);
     r.return_errno = return_errno;
-
     free(full_path);
-    printf("fsOpen(), end\n");
     return r;
 }
 
@@ -434,7 +429,6 @@ return_type fsClose(const int nparams, arg_type* a) {
     }
    
     int fd = *(int *)a->arg_val;
-    printf("closing fd %i\n",fd);
     delete_open_file(fd);
 
     int *return_val = malloc(sizeof(int));
@@ -468,8 +462,8 @@ return_type fsRead(const int nparams, arg_type* a) {
     r.return_val = buf;
     r.return_size = count;
     r.return_errno = return_errno;
-    printf("%i \n", r.return_size);
-    printBuf(buf,r.return_size);
+    //printf("%i \n", r.return_size);
+   // printBuf(buf,r.return_size);
     return r;
 }
 
@@ -481,14 +475,11 @@ return_type fsWrite(const int nparams, arg_type* a) {
         r.return_errno = EINVAL;
         return r;
     }
-    printf("fsWrite(), entering");
     int fd = *(int *)a->arg_val;
     //int fd = *(int *)a->arg_val;
     unsigned int count = *(int *)a->next->next->arg_val;
     void *buf = malloc(count);
     memcpy(buf, a->next->arg_val, count);
-    printf("fsWrite(), server \n");
-    printBuf(buf,count);
     int *return_val = malloc(sizeof(int));
     *return_val =  write(fd,buf,(size_t)count);
     int return_errno = errno;

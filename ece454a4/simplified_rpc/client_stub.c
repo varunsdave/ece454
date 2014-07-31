@@ -94,6 +94,7 @@ return_type make_remote_call(const char *servernameorip,
     /* Get the result */
     recvbytes(s, (void *)(&(r.return_size)), sizeof(int));
     recvbytes(s, (void *)(&(r.return_errno)), sizeof(int));
+    //printf("\t***client RPC , return_errno = %i \n",r.return_errno);
     if(r.return_size < 0) {
 	/* Error! */
 	fprintf(stderr, "Received %d return_size.\n", r.return_size);
@@ -105,7 +106,7 @@ return_type make_remote_call(const char *servernameorip,
     else {
 	r.return_val = (void *)malloc(r.return_size);
 	recvbytes(s, r.return_val, r.return_size);
-        recvbytes(s,(void *)(&(r.return_errno)),sizeof(int));
+   //     recvbytes(s,(void *)(&(r.return_errno)),sizeof(int));
     }
 
     shutdown(s, SHUT_RDWR); close(s);
