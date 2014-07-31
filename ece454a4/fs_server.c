@@ -389,7 +389,9 @@ return_type fsOpen(const int nparams, arg_type* a) {
     }
 
     printf("opening :%s \n", full_path);
+    int *return_errno = malloc(sizeof(int));
     int fd = open(full_path, flags, S_IRWXU);
+    *return_errno = errno;
     int* return_val = malloc(sizeof(int));
     *return_val = fd;
 
@@ -397,6 +399,7 @@ return_type fsOpen(const int nparams, arg_type* a) {
 
     r.return_val = return_val;
     r.return_size = sizeof(int);
+    r.return_errno = return_errno;
 
     free(full_path);
     printf("fsOpen(), end\n");
