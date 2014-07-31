@@ -385,7 +385,7 @@ return_type fsOpen(const int nparams, arg_type* a) {
         flags = O_RDONLY;
     }
     else if(mode == 1) {
-        flags = O_WRONLY | O_CREAT;
+        flags = O_WRONLY | O_CREAT | O_TRUNC;
     }
 
     printf("opening :%s \n", full_path);
