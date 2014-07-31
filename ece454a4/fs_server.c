@@ -338,6 +338,7 @@ return_type fsReadDir(const int nparams, arg_type* a) {
     DIR* dir = get_dir_from_fsdir_num(fsdir.num);
 
     struct fsDirent* dent = malloc(sizeof(struct fsDirent));
+    memset(dent, 0, sizeof(struct fsDirent));
 
     //const int initErrno = errno;
     struct dirent *d = readdir(dir);
@@ -449,7 +450,7 @@ return_type fsClose(const int nparams, arg_type* a) {
 }
 
 return_type fsRead(const int nparams, arg_type* a) {
-    if (nparams != 3) {
+    if (nparams != 2) {
         // error
         r.return_val = NULL;
         r.return_size = 0;

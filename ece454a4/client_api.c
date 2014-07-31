@@ -229,12 +229,16 @@ int fsUnmount(const char *localFolderName) {
 FSDIR* fsOpenDir(const char *folderName) {
      printf("fsOpenDir(), enter with folderName =%s\n",folderName);
      setRpcInformation(folderName);
-     char *dirName = malloc(strlen(folderName)-folderNameSize);
-     //printf("foldernamesize=%i   folderNameSize=%i\n",strlen(folderName),folderNameSize);   
-     strcpy(dirName,(folderName+folderNameSize));
+
+     char *dirName = malloc(strlen(folderName)-folderNameSize+1);
+     if (strlen(folderName) == folderNameSize) {
+        dirName[0] = '\0';
+     } else {
+         strcpy(dirName,(folderName+folderNameSize));
+     }
           
      printf("new directory name is %s, the folderNameSize = %i \n",dirName,folderNameSize);
-     return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsOpenDir",1,strlen(folderName)+1, dirName);
+     return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsOpenDir",1,strlen(dirName)+1, dirName);
      
      printf("returnOpenDir value from server.. need to be parsed \n");
     
@@ -320,12 +324,16 @@ int fsOpen(const char *fname, int mode) {
     
     int return_val = 0;    
     setRpcInformation(fname);
-    char *dirName = malloc (strlen(fname)-folderNameSize);
-    strcpy(dirName, (char *)(fname+folderNameSize+1));
+    char *dirName = malloc(strlen(fname)-folderNameSize+1);
+    if (strlen(fname) == folderNameSize) {
+        dirName[0] = '\0';
+    } else {
+        strcpy(dirName, (char *)(fname+folderNameSize+1));
+    }
     
     printf("fsOpen(), entering client call function,\n\t folderNameSize=%i dirName %s and fname: %s\n",folderNameSize,dirName,fname);
     do {
-    return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsOpen",2,strlen(fname)+1,dirName, sizeof(int),(void *)(&mode));
+    return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsOpen",2,strlen(dirName)+1,dirName, sizeof(int),(void *)(&mode));
     
     // return open file structure signatue
      return_val =  (*(int *)(ans.return_val));
@@ -368,7 +376,7 @@ int fsClose(int fd) {
 }
 
 int fsRead(int fd, void *buf, const unsigned int count) {
-    return_type ans = make_remote_call (serverIpOrDomainName, serverPort,"fsRead",3,sizeof(int),(void *)(&fd), count, (void *)buf, sizeof(int), (void *)(&count));
+    return_type ans = make_remote_call(serverIpOrDomainName, serverPort,"fsRead",2,sizeof(int),(void *)(&fd), sizeof(int), (void *)(&count));
     int return_val = ans.return_size;
     printf("fsRead(), return_val = %i\n",return_val);
     memcpy(buf, ans.return_val,ans.return_size);
