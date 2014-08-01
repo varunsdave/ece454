@@ -453,15 +453,14 @@ return_type fsRead(const int nparams, arg_type* a) {
     }
 
     int fd = *(int *)a->arg_val;
-    int count = *(int *)a->next->next->arg_val;
+    int count = *(int *)a->next->arg_val;
     void *buf = malloc(count);
 
-    int *return_val = malloc(sizeof(int));
-    *return_val = read(fd,buf,(size_t)count);
+    int bytes_read = read(fd,buf,(size_t)count);
     int return_errno = errno;
     
     r.return_val = buf;
-    r.return_size = count;
+    r.return_size = bytes_read;
     r.return_errno = return_errno;
     //printf("%i \n", r.return_size);
    // printBuf(buf,r.return_size);
@@ -544,7 +543,7 @@ int main(int argc, char *argv[]) {
     register_procedure("fsReadDir", 1, fsReadDir);
     register_procedure("fsOpen", 2, fsOpen);
     register_procedure("fsClose", 1, fsClose);
-    register_procedure("fsRead", 3, fsRead);
+    register_procedure("fsRead", 2, fsRead);
     register_procedure("fsWrite", 3, fsWrite);
     register_procedure("fsRemove", 1, fsRemove);
 

@@ -206,11 +206,12 @@ int fsUnmount(const char *localFolderName) {
     removeServerEntry(localFolderName); 
      return_type ans = make_remote_call(serverIpOrDomainName, serverPort, "fsUnmount", 1, sizeof(int), (void *)(&dummyCheckSum));
      int return_val = (*(int *)(ans.return_val));
-     if (return_val != -1){
-        return return_val;}
-     else{
+     if (return_val == dummyCheckSum){
+        return 0;
+     }
+     else {
        int err = ans.return_errno;
-       errno = err;
+       errno = ECOMM;
 
         return -1;
      }
