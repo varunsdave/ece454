@@ -134,7 +134,7 @@ int main(int argc, char *argv[]) {
     if(ff < 0) {
         perror("fsOpen(write)"); exit(1);
     }
-    //sleep(10); // sleep for 5 minutes
+    sleep(90); // sleep for 5 minutes
 
     if(fsClose(ff) < 0) {
         perror("fsClose return is < 0"); exit(1);

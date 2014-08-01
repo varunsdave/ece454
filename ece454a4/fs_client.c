@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
     printf("fsMount(): %d\n", fsMount(argv[1], atoi(argv[2]), dirname));
     printf("fsMount(): - folderAlsia %d\n", fsMount(argv[1],atoi(argv[2]), "folderAlias"));
     printf("fsMount(): - ../exFolder %d\n", fsMount(argv[1],atoi(argv[2]), "../exFolder"));
-    printf("mounting successfull \n"); 
+    
     FSDIR *fd = fsOpenDir(dirname);
     //printf("client app, returned fd-> num is: %i\n",fd->num) ;
     if(fd == NULL) {
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
     for(fdent = fsReadDir(fd); fdent != NULL; fdent = fsReadDir(fd)) {
 	printf("\t %s, %d\n", fdent->entName, (int)(fdent->entType));
     }
-    printf ("\t\t read fd->num directory: %i\n",fd->num);
+
     if(errno != 0) {
 	perror("fsReadDir");
     }
@@ -138,12 +138,13 @@ int main(int argc, char *argv[]) {
     if(fsWrite(ff, buf, 256) < 256) {
         fprintf(stderr, "fsWrite() wrote fewer than 256\n");
     }
+    sleep(60);
     //return 0;
     if(fsClose(ff) < 0) {
         perror("fsClose"); exit(1);
     }
 
-    //sleep(60);
+    sleep(60);
     //return 0;
     char readbuf[256];
     if((ff = fsOpen("../exFolder/apples/01.txt", 0)) < 0) {
@@ -180,15 +181,8 @@ int main(int argc, char *argv[]) {
        perror ("fsWrite line 02 on value_write failed");exit(1);
     }
     if (fsClose(ff) < 0) { perror("fsClose with value_write file failed");exit(1);}
-    errno=0;
-    printf("calling directory apples \n");
-    ff =fsOpen("sample/apples",1);
- 
-    if (errno != 0){
-       perror("error opening directory apples fsOpen()");exit(1);
-    }
-    //sleep(60); 
-   printf("fsRemove(%s): %d\n", "sample/apples/01.txt", fsRemove("samples/apples/01.txt"));  
+    
+    
     printf("fsCloseDir(): %d\n", fsCloseDir(fd3));
     printf("fsUnmount(): folderAlias %i\n",fsUnmount("folderAlias"));
     printf("fsUnmount(): ../exFolder/ %i\n",fsUnmount("../exFolder"));
