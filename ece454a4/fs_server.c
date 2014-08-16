@@ -269,7 +269,7 @@ return_type fsOpenDir(const int nparams, arg_type* a) {
 
     DIR *dir;
     dir = opendir(full_path);
-    int return_errno = 0;
+    int return_errno = errno;
 
     if (dir == NULL) {
         // error
@@ -310,7 +310,7 @@ return_type fsCloseDir(const int nparams, arg_type* a) {
     int* return_val = malloc(sizeof(int));
 
     *return_val = close_fsdir(fsdir);
-    int return_errno = 0;
+    int return_errno = errno;
 
     r.return_val = return_val;
     r.return_size = sizeof(int);
@@ -338,8 +338,9 @@ return_type fsReadDir(const int nparams, arg_type* a) {
     memset(dent, 0, sizeof(struct fsDirent));
 
     //const int initErrno = errno;
-    struct dirent *d = readdir(dir);
     int return_errno = 0;
+    struct dirent *d = readdir(dir);
+    return_errno = errno;
 
     if(d == NULL) {
         //if(errno == initErrno) errno = 0;
@@ -405,7 +406,7 @@ return_type fsOpen(const int nparams, arg_type* a) {
     }
 
     int fd = open(full_path, flags, S_IRWXU);
-    int return_errno = 0;
+    int return_errno = errno;
     
     int* return_val = malloc(sizeof(int));
     *return_val = fd;
@@ -434,7 +435,7 @@ return_type fsClose(const int nparams, arg_type* a) {
 
     int *return_val = malloc(sizeof(int));
     *return_val =  close(fd);
-    int return_errno = 0;
+    int return_errno = errno;
 
     r.return_val = return_val;
     r.return_size = sizeof(int);
@@ -457,7 +458,7 @@ return_type fsRead(const int nparams, arg_type* a) {
     void *buf = malloc(count);
 
     int bytes_read = read(fd,buf,(size_t)count);
-    int return_errno = 0;
+    int return_errno = errno;
     
     r.return_val = buf;
     r.return_size = bytes_read;
@@ -482,7 +483,7 @@ return_type fsWrite(const int nparams, arg_type* a) {
     memcpy(buf, a->next->arg_val, count);
     int *return_val = malloc(sizeof(int));
     *return_val =  write(fd,buf,(size_t)count);
-    int return_errno = 0;
+    int return_errno = errno;
     //write(fd, buf, (size_t)count);
     r.return_val = return_val;
     r.return_size = sizeof(int);
@@ -518,7 +519,7 @@ return_type fsRemove(const int nparams, arg_type* a) {
 
     int* return_val = malloc(sizeof(int));
     *return_val = remove(full_path);
-    int return_errno = 0;
+    int return_errno = errno;
 
     r.return_val = return_val;
     r.return_size = sizeof(return_val);
